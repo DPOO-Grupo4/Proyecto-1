@@ -6,5 +6,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="derbyJars/derby.jar"/>
+	<classpathentry kind="lib" path="derbyJars/derbyshared.jar"/>
+	<classpathentry kind="lib" path="derbyJars/derbytools.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

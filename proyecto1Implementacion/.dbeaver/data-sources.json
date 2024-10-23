@@ -1,0 +1,33 @@
+{
+	"folders": {},
+	"connections": {
+		"derby-1928d950336-20de515201b4f23": {
+			"provider": "generic",
+			"driver": "derby",
+			"name": "Derby Embedded",
+			"configuration": {
+				"url": "jdbc:derby:{C:\\Users\\juanj\\git\\proyecto1DPOO\\proyecto1Implementacion\\DataBase}",
+				"configurationType": "URL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
+		}
+	},
+	"connection-types": {
+		"dev": {
+			"name": "Development",
+			"color": "255,255,255",
+			"description": "Regular development database",
+			"auto-commit": true,
+			"confirm-execute": false,
+			"confirm-data-change": false,
+			"smart-commit": false,
+			"smart-commit-recover": true,
+			"auto-close-transactions": true,
+			"close-transactions-period": 1800,
+			"auto-close-connections": true,
+			"close-connections-period": 14400
+		}
+	}
+}
