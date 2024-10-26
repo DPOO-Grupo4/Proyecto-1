@@ -365,15 +365,16 @@ public class Sistema {
 	
 	public PreguntaOpcionMultiple crearPreguntaOpcionMultiple(int idPregunta, String Qstatement ) throws SQLException {
 		Statement statement = this.connection.createStatement();
-		ResultSet resultset = statement.executeQuery("SELECT OA.explicacion, OA.correct, OA.enunciado FROM optionsAsToQuestions OA WHERE OA.idPregunta = "+idPregunta+"");
+		ResultSet resultset = statement.executeQuery("SELECT OA.explicacion, OA.correct, OA.enunciado, OA.idOpcion FROM optionsAsToQuestions OA WHERE OA.idPregunta = "+idPregunta+"");
 		ArrayList<Opcion> opciones = new ArrayList<Opcion>();
 		Opcion respuestaCorrecta = null;
 		while (resultset.next()) {
 			String explicacion = resultset.getString("explicacion");
 			String enunciado = resultset.getString("enunciado");
 			boolean correct = resultset.getBoolean("correct");
+			int idOpcion = resultset.getInt("idOpcion");
 			
-			Opcion opcion = new Opcion(explicacion, correct, enunciado);
+			Opcion opcion = new Opcion(explicacion, correct, enunciado, idOpcion);
 			if (correct) {
 				respuestaCorrecta = opcion;
 				
@@ -423,7 +424,10 @@ public class Sistema {
 			String enunciado = resultset.getString("enunciado");
 			boolean correct = resultset.getBoolean("correct");
 			
-			return new Opcion(explicacion, correct, enunciado);
+			//int idOpcion = resultset.getInt("idOpcion");
+			
+			
+			return new Opcion(explicacion, correct, enunciado, idOpcion);
 		}
 		else {
 			return null;
@@ -519,5 +523,31 @@ public class Sistema {
 		}else {
 			statement.executeUpdate("UPDATE inscribedActivities SET state = '"+fechaInicio+","+fechaFin+","+String.valueOf(aprobado)+"' WHERE idActivity = "+ String.valueOf(actividad.getID())+ "AND login = '"+usuario.getLogin()+"'");
 		}
+	}
+	public void actualizarRespuestaUsuario(Usuario usuario, int idPregunta, String idOpcion, String respuesta, boolean yaEstabaCreado) throws SQLException {
+		Statement statement = this.connection.createStatement();
+		if (!yaEstabaCreado) {
+			statement.executeUpdate("INSERT INTO answersActivity (idPregunta, idOpcion, usuario, respuesta) VALUES ("+String.valueOf(idPregunta)+","+idOpcion+",'"+usuario.getLogin()+"','"+respuesta+"')");
+		}else {
+			statement.execute("UPDATE answersActivity SET respuesta = '"+respuesta+"' WHERE idPregunta = "+String.valueOf(idPregunta)+"AND usuario = '"+usuario.getLogin()+"'");
+		}
+	}
+	public HashMap<String, LearningPath> getLPs(){
+		return this.learningPathsCreados;
+	}
+	public void inscribirLP(LearningPath LP, Estudiante estudiante) throws SQLException { //Esto esta sujeto a cambios, la aplicacion no contempla por ahora que un profesor pueda inscribir un learningpath
+		Statement statement = this.connection.createStatement();
+		ArrayList<LearningPath> LPsInscritos = estudiante.getLPsInscritos();
+		HashMap<String, Boolean> yaInscritos = new HashMap<String,Boolean>();
+		for (LearningPath lp : LPsInscritos) {
+			yaInscritos.put(lp.getTitulo(), true);
+		}
+		if (!yaInscritos.get(LP.getTitulo())) {
+			statement.executeUpdate("INSERT INTO CreatedLearningPaths (login, nameLP) VALUES ('"+estudiante.getLogin()+"',"+LP.getTitulo()+")");
+			LPsInscritos.add(LP);
+			estudiante.setLPsInscritos(LPsInscritos);
+		}
+		
+		
 	}
 }

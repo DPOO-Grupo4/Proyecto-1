@@ -9,4 +9,7 @@ public class Tarea extends Actividad{
 		super(creator, id, mandatory, descripcion, difficulty, duration, started, dateLimit, states);
 		this.comentario = comment;
 	}
+	public String getComentario() {
+		return this.comentario;
+	}
 }

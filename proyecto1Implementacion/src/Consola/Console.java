@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 import System.Actividad;
+import System.ActividadRecurso;
 import System.Examen;
 import System.LearningPath;
 import System.Opcion;
@@ -16,6 +17,8 @@ import System.Pregunta;
 import System.PreguntaOpcionMultiple;
 import System.Quiz;
 import System.Sistema;
+import System.Tarea;
+import Usuarios.Estudiante;
 
 public class Console {
 	
@@ -122,10 +125,11 @@ public class Console {
 	}
 	public static boolean menuAplicacionEstudiante(Sistema sistema, Scanner scanner) throws SQLException {
 		System.out.println("\n[1] Consultar mis learning paths inscritos \n");
-		System.out.println("[2] Cerrar sesión\n");
+		System.out.println("\n[2] Inscribir un learning path\n");
+		System.out.println("[3] Cerrar sesión\n");
 		System.out.println("¿Qué desea hacer?");
 		int opcion = scanner.nextInt();
-		while (opcion != 1 && opcion != 2) {
+		while (opcion != 1 && opcion != 2 && opcion != 3) {
 			System.out.println("Digito una opcion que no existe");
 			opcion = scanner.nextInt();
 		}
@@ -134,26 +138,43 @@ public class Console {
 			while (runMenuLPsInscritos) {
 				runMenuLPsInscritos = menuLearningPathsInscritos(sistema, scanner);
 			}
-		}
-		if (opcion == 2) {
+		}else if (opcion == 3) {
 			return false;
-		}else {
+		}else if (opcion == 2){
+			ArrayList<LearningPath> LPsInscritos = sistema.getLPsInscritos(sistema.getSession().getLogin());
+			HashMap<String, LearningPath> learningPaths = sistema.getLPs();
+			ArrayList<String> titulosLPs = new ArrayList<>();
+			for (int i = 0; i < learningPaths.size(); i ++) {
+				System.out.println("["+String.valueOf(i)+"] " + (new ArrayList<LearningPath> (learningPaths.values())).get(i).getTitulo());
+				titulosLPs.add( (new ArrayList<LearningPath> (learningPaths.values())).get(i).getTitulo());
+			}
+			System.out.println("["+learningPaths.size()+"] Volver");
+			System.out.println("De la lista de Learning Paths en el sistema ¿ Cúal desea inscribir ?");
+			int opcioni = scanner.nextInt();
+			sistema.inscribirLP(learningPaths.get(titulosLPs.get(opcioni)),(Estudiante) sistema.getSession());
 			return true;
 		}
+		else {
+			return true;
+		}
+		return true;
 	}
 	public static boolean menuLearningPathsInscritos(Sistema sistema, Scanner scanner) throws SQLException {
 		ArrayList<LearningPath> LPsInscritos = sistema.getLPsInscritos(sistema.getSession().getLogin());
-		
+		System.out.println("__________________________________________");
+		System.out.println("MIS LEARNING PATHS INSCRITOS ");
 		for (int i=0; i < LPsInscritos.size(); i++) {
 			System.out.println("["+String.valueOf(i)+"]" + LPsInscritos.get(i).getTitulo());
 		}
 		System.out.println("["+LPsInscritos.size() + "] Salir");
+		System.out.println("__________________________________________");
 		System.out.println("Cual learning path desea consultar: ");
 		int opcion1 = scanner.nextInt();
 		while (opcion1>LPsInscritos.size() & opcion1<0) {
 			System.out.println("Por favor digite una opcion valida");
 			opcion1 = scanner.nextInt();
 		}
+		
 		if (opcion1 == LPsInscritos.size()) {
 			return false;
 		}else {
@@ -166,10 +187,12 @@ public class Console {
 	}
 	public static boolean mostrarLearningPath(Sistema sistema, Scanner scanner, ArrayList<LearningPath> LPsInscritos, int opcion) throws SQLException {
 		LearningPath LPEscogido = LPsInscritos.get(opcion);
-		System.out.println(LPEscogido.getTitulo());
-		System.out.println(LPEscogido.getDescripcion());
+		System.out.println("__________________________________________");
+		System.out.println("LEARNING PATH : "+LPEscogido.getTitulo());
+		System.out.println("DESCRIPCION : "+LPEscogido.getDescripcion());
 		System.out.println("DIFICULTAD: " +LPEscogido.getDifficulty());
-		System.out.println("DURACION: "+ String.valueOf(LPEscogido.getDuration()));
+		System.out.println("DURACION: "+ String.valueOf(LPEscogido.getDuration())+" minutos");
+		System.out.println("__________________________________________");
 		System.out.println("ACTIVIDADES:");
 		ArrayList<Actividad> actividades = LPEscogido.getActivities();
 		for (int i = 0; i < actividades.size();i++) {
@@ -193,11 +216,13 @@ public class Console {
 	
 	public static boolean mostrarActividad(Sistema sistema, Scanner scanner, ArrayList<Actividad> actividades, int opcion) throws SQLException {
 		Actividad actividadEscogida = actividades.get(opcion);
+		System.out.println("__________________________________________");
 		System.out.println("Actividad : "+ String.valueOf(actividadEscogida.getID()));
-		System.out.println(actividadEscogida.getDescripcion());
-		System.out.println(actividadEscogida.getDifficulty());
-		System.out.println(String.valueOf(actividadEscogida.getDuration()));
-		System.out.println(actividadEscogida.getDateLimit());
+		System.out.println("DESCRIPCION : " +actividadEscogida.getDescripcion());
+		System.out.println("DIFICULTAD : " +actividadEscogida.getDifficulty());
+		System.out.println("DURACION : "+String.valueOf(actividadEscogida.getDuration())+  " minutos");
+		System.out.println("fecha limite : " + actividadEscogida.getDateLimit());
+		System.out.println("__________________________________________");
 		HashMap<String, String[]>states = actividadEscogida.getState();
 		boolean yaAprobada = false;
 		if (states.containsKey(sistema.getSession().getLogin())) {
@@ -236,6 +261,7 @@ public class Console {
 				}
 				System.out.println("Seleccione la opcion que considere correcta :");
 				int respuestaUsuario = scanner.nextInt() -1;
+				sistema.actualizarRespuestaUsuario(sistema.getSession(),pregunta.getID(), String.valueOf(opciones.get(respuestaUsuario).getID()), null, false );
 				if (opciones.get(respuestaUsuario).getCorrect()) {
 					respuestasBuenas+=1;
 				}
@@ -247,7 +273,7 @@ public class Console {
 				
 			}
 			return true;
-		}if (actividadEscogida.getClass().getSimpleName().equals("Examen") & opcion3==0 & !yaAprobada) {
+		}else if (actividadEscogida.getClass().getSimpleName().equals("Examen") & opcion3==0 & !yaAprobada) {
 			HashMap<String, String[]> state = actividadEscogida.getState();
 			if (!state.containsKey(sistema.getSession().getLogin())) {
 				state.put(sistema.getSession().getLogin(), new String[3]);
@@ -255,6 +281,66 @@ public class Console {
 			}
 			Examen actividad = (Examen) actividadEscogida;
 			ArrayList<Pregunta> preguntas = actividad.getPreguntas();
+			for (int i =1 ; i <= preguntas.size(); i++) {
+				System.out.println("Pregunta "+String.valueOf(i)+":");
+				Pregunta pregunta= preguntas.get(i-1);
+				System.out.println("Pregunta "+String.valueOf(i));
+				System.out.println(pregunta.getEnunciado());
+				System.out.println("A continuación escriba su respuesta");
+				String respuestaUsuario = scanner.next();
+				sistema.actualizarRespuestaUsuario(sistema.getSession(), pregunta.getID(), "NULL", respuestaUsuario, false);
+				System.out.println("Su respuesta fue enviada con exito");
+			}
+			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0], LocalDate.now().toString(), false, false);
+			return true;
+		}else if (actividadEscogida.getClass().getSimpleName().equals("Encuesta") & opcion3==0 & !yaAprobada) {
+			HashMap<String, String[]> state = actividadEscogida.getState();
+			if (!state.containsKey(sistema.getSession().getLogin())) {
+				state.put(sistema.getSession().getLogin(), new String[3]);
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString() , "", false, false);
+			}
+			Examen actividad = (Examen) actividadEscogida;
+			ArrayList<Pregunta> preguntas = actividad.getPreguntas();
+			for (int i =1 ; i <= preguntas.size(); i++) {
+				System.out.println("Pregunta "+String.valueOf(i)+":");
+				Pregunta pregunta= preguntas.get(i-1);
+				System.out.println("Pregunta "+String.valueOf(i));
+				System.out.println(pregunta.getEnunciado());
+				System.out.println("A continuación escriba su respuesta");
+				String respuestaUsuario = scanner.next();
+				sistema.actualizarRespuestaUsuario(sistema.getSession(), pregunta.getID(), "NULL", respuestaUsuario, false);
+				
+			}
+			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0], LocalDate.now().toString(), true, false);
+			return true;
+		}else if (actividadEscogida.getClass().getSimpleName().equals("ActividadRecurso") & opcion3==0 & !yaAprobada) {
+			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString(),"" ,false, false);
+			HashMap<String, String[]> state = actividadEscogida.getState();
+			ActividadRecurso actividadRecurso = (ActividadRecurso) actividadEscogida;
+			System.out.println("HIPERVINCULO : "+ actividadRecurso.getDocumentPath());
+			System.out.println("[0] volver");
+			int opcioni = scanner.nextInt();
+			while (opcioni != 0) {
+				opcioni = scanner.nextInt();
+			}if (opcioni == 0) {
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0],LocalDate.now().toString() ,false, false);
+				return false;
+			}
+			return true;
+		}else if (actividadEscogida.getClass().getSimpleName().equals("Tarea") & opcion3==0 & !yaAprobada) {
+			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString(),"" ,false, false);
+			HashMap<String, String[]> state = actividadEscogida.getState();
+			Tarea tarea = (Tarea) actividadEscogida;
+			System.out.println("Comentario : " + tarea.getComentario()); //Se supone que el comentario les dice donde enviar la tarea que hicieron
+			System.out.println("[0] completar ");
+			int opcioni = scanner.nextInt();
+			while (opcioni != 0) {
+				opcioni = scanner.nextInt();
+			}if (opcioni == 0) {
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0],LocalDate.now().toString() ,false, false);
+				return false;
+			}
+			return true;
 		}
 		else {
 			return false;

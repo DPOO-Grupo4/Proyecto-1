@@ -8,4 +8,7 @@ public class ActividadRecurso extends Actividad {
 		super(creator, id, mandatory, descripcion, difficulty, duration, started, dateLimit, states);
 		this.documentPath = documentPath;
 	}
+	public String getDocumentPath() {
+		return this.documentPath;
+	}
 }
