@@ -3,6 +3,8 @@ package System;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import Usuarios.Estudiante;
+
 public class Examen extends Actividad {
 	ArrayList<Pregunta> preguntas;
 	HashMap<Integer, HashMap<String, Object>> respuestas;
@@ -14,5 +16,10 @@ public class Examen extends Actividad {
 public ArrayList<Pregunta> getPreguntas(){
 	return this.preguntas;
 }
+public void setCalificacion(Estudiante estudiante, int calificacion) {
+    if (calificacion < 0 || calificacion > 5) {
+        System.out.println("Error: La calificación debe estar entre 0 y 5.");
+        return;
+    }
 
-}
+}}

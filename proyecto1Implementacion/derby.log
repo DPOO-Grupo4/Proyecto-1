@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Sat Oct 26 17:31:17 COT 2024:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.17.1.0 - (1913217): instance a816c00e-0192-caf4-89da-00000786ed10 
-on database directory C:\Users\user\Desktop\dpoo PROYECTO\Proyecto-1\proyecto1Implementacion\DataBase with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5c647e05 
+Sat Oct 26 20:28:55 COT 2024:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.17.1.0 - (1913217): instance a816c00e-0192-cb97-2d25-000007267aa8 
+on database directory C:\Users\user\Desktop\dpoo PROYECTO\Proyecto-1\proyecto1Implementacion\DataBase with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@76ed5528 
 Loaded from file:/C:/Users/user/Desktop/dpoo%20PROYECTO/Proyecto-1/proyecto1Implementacion/derbyJars/derby.jar
 java.vendor=Oracle Corporation
 java.runtime.version=22.0.2+9-70

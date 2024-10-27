@@ -16,6 +16,8 @@ import System.Pregunta;
 import System.PreguntaOpcionMultiple;
 import System.Quiz;
 import System.Sistema;
+import Usuarios.Estudiante;
+import Usuarios.Profesor;
 
 public class Console {
 	
@@ -300,7 +302,7 @@ public class Console {
 	                int calificacion = scanner.nextInt();
 	                scanner.nextLine(); 
 	
-	                String fechaCreacion = LearningPath.obtenerFechaActual(); 
+	                String fechaCreacion = "0000"; 
 	                LearningPath nuevoLP = new LearningPath(profesor.getLogin(), tituloLP, descripcionGeneral, dificultad, duracion, calificacion, fechaCreacion, fechaCreacion, sistema);
 	                profesor.crearLearningPath(nuevoLP);
 	                System.out.println("Learning Path creado con éxito.");
