@@ -7,6 +7,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -99,6 +100,12 @@ public class Sistema {
 	
 	public LearningPath crearLearningPath(String creador, String titulo, String descripcionGeneral, String difficulty, int duration, int rating, String fechaCreacion, String fechaModificacion, boolean nuevo) throws SQLException {
 		LearningPath newLP = new LearningPath(creador, titulo, descripcionGeneral, difficulty, duration, rating, fechaCreacion, fechaModificacion, this);
+		if (nuevo) {
+			Statement statement = this.connection.createStatement();
+			//statement.executeUpdate("INSERT INTO createdLearningPaths (nameLP, login) VALUES ('"+titulo+"','"+creador+"')");
+			statement.executeUpdate("INSERT INTO learningPaths (nameLP,creator, description, difficulty, duration, rating, creationDate, moddate) VALUES ('"+titulo+"','"+creador+"','"+descripcionGeneral+"','"+difficulty+"',"+String.valueOf(duration)+","
+					+ "0,'"+LocalDate.now().toString()+"','"+LocalDate.now().toString()+"')");
+		}
 		return newLP;
 	}
 	
@@ -251,17 +258,32 @@ public class Sistema {
 	public Actividad crearActividad(String creator, int id, boolean mandatory, String description, String difficulty, int duration, boolean started, String datelimit, String type, String documentPath, int calificacionMinima,HashMap<String,String[]> states, boolean nuevo) throws SQLException {
 		Statement globalStatement = this.connection.createStatement();
 		if (type.equals("actividadRecurso")) {
+			if (nuevo) {
+				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
+						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
+			
+				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.description = '"+description+"' AND A.creator = '"+creator+"'");
+				if (resultset.next()) {
+					id = resultset.getInt("id");
+				}
+			}
 			ActividadRecurso actividadRecurso =  new ActividadRecurso(creator, id, mandatory, description, difficulty, duration, started, datelimit,states, documentPath);
 			if (!this.actividades.containsKey(id)) {
 				this.actividades.put(id, actividadRecurso);
 			}
-			if (nuevo) {
-				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
-			}
+			
 			return actividadRecurso;
 			
 		}else if (type.equals("quiz")) {
+			if (nuevo) {
+				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
+						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
+			
+				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.description = '"+description+"' AND A.creator = '"+creator+"'");
+				if (resultset.next()) {
+					id = resultset.getInt("id");
+				}
+			}
 			ArrayList<Pregunta> preguntas = getPreguntasActividad(id);
 			ArrayList<Integer> IDsPreguntas = new ArrayList<Integer>();
 			for (Pregunta p : preguntas) {
@@ -271,15 +293,20 @@ public class Sistema {
 			if (!this.actividades.containsKey(id)) {
 				this.actividades.put(id, quiz);
 			}
-			if (nuevo) {
-				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
-				
-			}
+
 			return quiz;
 			
 			
 		}else if (type.equals("examen")) {
+			if (nuevo) {
+				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
+						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
+			
+				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.description = '"+description+"' AND A.creator = '"+creator+"'");
+				if (resultset.next()) {
+					id = resultset.getInt("id");
+				}
+			}
 			ArrayList<Pregunta> preguntas = getPreguntasActividad(id);
 			ArrayList<Integer> IDsPreguntas = new ArrayList<Integer>();
 			for (Pregunta p : preguntas) {
@@ -290,13 +317,19 @@ public class Sistema {
 				this.actividades.put(id, examen);
 			}
 			
-			if (nuevo) {
-				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
-			}
+	
 			return examen;
 		
 		}else if (type.equals("encuesta")) {
+			if (nuevo) {
+				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
+						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
+			
+				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.description = '"+description+"' AND A.creator = '"+creator+"'");
+				if (resultset.next()) {
+					id = resultset.getInt("id");
+				}
+			}
 			ArrayList<Pregunta> preguntas = getPreguntasActividad(id);
 			ArrayList<Integer> IDsPreguntas = new ArrayList<Integer>();
 			for (Pregunta p : preguntas) {
@@ -307,14 +340,20 @@ public class Sistema {
 				this.actividades.put(id, encuesta);
 			}
 			
-			if (nuevo) {
-				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
-			}
+
 			return encuesta;
 		
 		
 		}else if (type.equals("tarea")) {
+			if (nuevo) {
+				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
+						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
+			
+				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.description = '"+description+"' AND A.creator = '"+creator+"'");
+				if (resultset.next()) {
+					id = resultset.getInt("id");
+				}
+			}
 			Statement statement = this.connection.createStatement();
 			ResultSet resultset = statement.executeQuery("SELECT * FROM activities A WHERE A.id = "+ id+"");
 			String comment = "";
@@ -326,11 +365,7 @@ public class Sistema {
 				this.actividades.put(id, tarea);
 			}
 			
-			if (nuevo) {
-				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"','"+String.valueOf(id)+"','"+description +"','"+ difficulty + "','"+String.valueOf(duration)+"','" + String.valueOf(started)+"','"+datelimit+"','"+type+"','"+documentPath+"','"+String.valueOf(calificacionMinima) +"')");
-				
-			}
+
 			return tarea;
 			
 		}else {
@@ -437,10 +472,14 @@ public class Sistema {
 			ResultSet resultset = statement.executeQuery("SELECT * FROM USERS U WHERE U.login = '"+login+"'");
 			if (resultset.next()) {
 				String passwordDatabase = resultset.getString("password");
-				
+				String tipo = resultset.getString("tipo");
 			
 			if (password.equals(passwordDatabase)) {
-				this.Session = this.estudiantes.get(login);
+				if (tipo.equals("estudiante")) {
+					this.Session = this.estudiantes.get(login);
+				}else {
+					this.Session = this.profesores.get(login);
+				}
 				return "¡Inicio sesión correctamente '" + login +"'!";
 				}
 			}
@@ -520,7 +559,7 @@ public class Sistema {
 			statement.executeUpdate("UPDATE inscribedActivities SET state = '"+fechaInicio+","+fechaFin+","+String.valueOf(aprobado)+"' WHERE idActivity = "+ String.valueOf(actividad.getID())+ "AND login = '"+usuario.getLogin()+"'");
 		}
 	}
-}
+
 
 	public Estudiante buscarEstudiantePorLogin(String login) {
 		return estudiantes.get(login);
@@ -575,3 +614,10 @@ public class Sistema {
 	    }
 	    return null; 
 	}
+	public void crearNuevaPregunta(String enunciado, int idActividad, String typeQ) throws SQLException {
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate("INSERT INTO questionsAsToQuestionaries (idActividad) VALUES ("+String.valueOf(idActividad)+")");
+		ResultSet resultset = statement.executeQuery("SELECT * FROM questionsAsToQuestionaries QA WHERE QA.idPregunta");
+		
+	}
+}

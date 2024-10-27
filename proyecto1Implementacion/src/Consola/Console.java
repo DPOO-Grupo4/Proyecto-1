@@ -271,7 +271,7 @@ public class Console {
 	    while (true) {
 	        System.out.println("\n--- Menú del Profesor ---");
 	        System.out.println("[1] Crear Learning Path");
-	        System.out.println("[2] Crear Actividad");
+	        System.out.println("[2] Editar Learning Path");
 	        System.out.println("[3] Calificar Actividad");
 	        System.out.println("[4] Calificar Examen");
 	        System.out.println("[5] Publicar reseña");
@@ -281,65 +281,51 @@ public class Console {
 	        System.out.print("¿Qué desea hacer? ");
 
 	        int opcion = scanner.nextInt();
-	        scanner.nextLine(); 
+	        //scanner.nextLine(); 
 
 	        switch (opcion) {
 		        case 1:
 	                
 	                System.out.print("Ingrese el título del Learning Path: ");
-	                String tituloLP = scanner.nextLine();
+	                String tituloLP = scanner.next();
 	
 	                System.out.print("Ingrese la descripción general: ");
-	                String descripcionGeneral = scanner.nextLine();
+	                String descripcionGeneral = scanner.next();
 	
 	                System.out.print("Ingrese la dificultad (Basico, Intermedio, Avanzado): ");
-	                String dificultad = scanner.nextLine();
+	                String dificultad = scanner.next();
 	
-	                System.out.print("Ingrese la duración en horas (Valores Enteros): ");
+	                System.out.print("Ingrese la duración en minutos (Valores Enteros): ");
 	                int duracion = scanner.nextInt();
 	
-	                System.out.print("Ingrese la calificación inicial de 0 a 5 (Valores Enteros): ");
-	                int calificacion = scanner.nextInt();
-	                scanner.nextLine(); 
+	                //System.out.print("Ingrese la calificación inicial de 0 a 5 (Valores Enteros): ");
+	                //int calificacion = scanner.nextInt();
+	                //scanner.nextLine(); 
 	
-	                String fechaCreacion = "0000"; 
-	                LearningPath nuevoLP = new LearningPath(profesor.getLogin(), tituloLP, descripcionGeneral, dificultad, duracion, calificacion, fechaCreacion, fechaCreacion, sistema);
-	                profesor.crearLearningPath(nuevoLP);
+	                String fechaCreacion = LocalDate.now().toString(); 
+	                LearningPath nuevoLP = sistema.crearLearningPath(profesor.getLogin(), tituloLP, descripcionGeneral, dificultad, duracion, 0, fechaCreacion, fechaCreacion, true);
+	                profesor.añadirLearningPath(nuevoLP);
+	                
 	                System.out.println("Learning Path creado con éxito.");
 	                break;
 	                
 		        case 2:
-		     
-		            System.out.print("Ingrese el título de la Actividad: ");
-		            String tituloActividad = scanner.nextLine();
-
-		            System.out.print("Ingrese la descripción de la Actividad: ");
-		            String descripcionActividad = scanner.nextLine();
-
-		            System.out.print("Ingrese el objetivo de la Actividad: ");
-		            String objetivoActividad = scanner.nextLine();
-
-		            System.out.print("Ingrese la dificultad (Basico, Intermedio, Avanzado): ");
-		            String nivelDificultad = scanner.nextLine();
-
-		            System.out.print("Ingrese la duración en minutos (Valores Enteros): ");
-		            int duracionActividad = scanner.nextInt();
-		            scanner.nextLine(); 
-
-		            System.out.print("¿Es obligatoria? (true/false): ");
-		            boolean obligatoria = scanner.nextBoolean();
-		            scanner.nextLine(); 
-
-		            System.out.print("Ingrese la fecha límite (Formato: YYYY-MM-DD): ");
-		            String fechaLimite = scanner.nextLine();
-
-		            
-		            Actividad nuevaActividad = new Actividad(tituloActividad, descripcionActividad, objetivoActividad, nivelDificultad, duracionActividad, obligatoria, profesor.getLogin(), fechaLimite);
-
-		            
-		            profesor.crearActividad(nuevaActividad);
-
-		            System.out.println("Actividad creada con éxito.");
+		        	System.out.println("__________________________________________");
+		        	System.out.println("Que Learning Path desea editar ... ");
+		        	ArrayList<LearningPath> LPs =  ((Profesor) sistema.getSession()).getLPs();
+		        	for (int i = 1 ; i <= LPs.size(); i++) {
+		        		System.out.println("["+String.valueOf(i)+"]"+LPs.get(i-1).getTitulo());
+		        	}
+		        	System.out.println("["+String.valueOf(LPs.size()+1)+"] Volver");
+		        	System.out.println("__________________________________________");
+		        	int opcioni = scanner.nextInt();
+		        	while (opcioni != LPs.size()+1) {
+		        		opcioni = scanner.nextInt();
+		        		if (opcioni >=1 & opcioni<=LPs.size()) {
+			        		menuEdicion(sistema, scanner, LPs.get(opcioni));
+			        	}
+		        	}
+		        	
 		            break;
 		            
 		        case 3:
@@ -428,7 +414,7 @@ public class Console {
 	                
 	                System.out.println("--- Actividades Creadas ---");
 	                for (Actividad actividad : profesor.getActividadesCreadas()) {
-	                    System.out.println("Título: " + actividad.getNombre());
+	                    //System.out.println("Título: " + actividad.getNombre());
 	                    System.out.println("Descripción: " + actividad.getDescripcion());
 	                    System.out.println("Dificultad: " + actividad.getDifficulty());
 	                    System.out.println("Duración: " + actividad.getDuration() + " minutos");
@@ -460,6 +446,50 @@ public class Console {
 	                System.out.println("Opción no válida. Intente de nuevo.");
 	        }
 	    }
+	}
+	public static boolean menuEdicion(Sistema sistema, Scanner scanner, LearningPath LP) {
+		System.out.println("___________________________________");
+		System.out.println("Bienvenido al menu de edicion ");
+		System.out.println("Ahora mismo esta editando el Learning Path : "+ LP.getTitulo());
+		System.out.println("[0] Añadir actividad");
+		System.out.println("[1] Remover alguna actividad");
+		System.out.println("[2] Salir");
+		int opcion = scanner.nextInt();
+		while (opcion != 0 & opcion != 1 & opcion != 2) {
+			opcion = scanner.nextInt();
+		}
+		
+		if (opcion == 2) {
+			return false;
+		}else if (opcion == 0) {
+			boolean runMenuCA = true;
+			while (runMenuCA) {
+				runMenuCA = menuCreacionActividad(sistema, scanner, LP);
+			}
+		}else {
+			
+		}
+	}
+	public static boolean menuCreacionActividad(Sistema sistema, Scanner scanner, LearningPath LP) throws SQLException {
+		System.out.println("______________________________________");
+		System.out.println("A continuación se le va a pedir que digite una información necesaria para la creacion de la actividad");
+		System.out.println("DESCRIPCION : ");
+		String descripcion = scanner.next();
+		System.out.println("DIFICULTAD : ");
+		String dificultad = scanner.next();
+		System.out.println("OBLIGATORIA (true, false) : ");
+		boolean mandatory = scanner.nextBoolean();
+		System.out.println("DURACION (en minutos) : ");
+		int duration = scanner.nextInt();
+		System.out.println("FECHA LÍMITE : ");
+		String dateLimit = scanner.next();
+		String documentPath = "";
+		System.out.println("TIPO (Quiz, Examen, Encuesta, Tarea, actividadRecurso");
+		String tipo = scanner.next();
+		
+		Actividad newActividad = sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, false, dateLimit, tipo, documentpath, 0, new HashMap<String, String[]>(), true);
+		
+		System.out.println("______________________________________");
 	}
 }
 

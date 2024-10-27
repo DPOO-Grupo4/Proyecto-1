@@ -17,12 +17,16 @@ public class Profesor extends Usuario {
     }
 
     
-    public void crearLearningPath(LearningPath learningPath) {
-        learningPathsCreados.add(learningPath);
+    public void añadirLearningPath(LearningPath learningPath) {
+        this.learningPathsCreados.add(learningPath);
     }
 
     public void crearActividad(Actividad actividad) {
         actividadesCreadas.add(actividad);
+    }
+    
+    public ArrayList<LearningPath> getLPs(){
+    	return this.learningPathsCreados;
     }
 
     public void editarActividad(Actividad actividad, String nuevoNombre, String nuevaDescripcion, int nuevaDuracion, String nuevoContenido) {
