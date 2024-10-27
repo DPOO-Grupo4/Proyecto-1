@@ -521,3 +521,57 @@ public class Sistema {
 		}
 	}
 }
+
+	public Estudiante buscarEstudiantePorLogin(String login) {
+		return estudiantes.get(login);
+}
+	public Examen getExamenById(int idExamen) {
+        Actividad actividad = actividades.get(idExamen); 
+        
+        if (actividad instanceof Examen) { 
+            return (Examen) actividad; 
+        } else {
+            System.out.println("Examen no encontrado con ID: " + idExamen);
+            return null; 
+        }
+    }
+	
+	public Actividad buscarActividadPorTitulo(String titulo) throws SQLException {
+	    Statement statement = this.connection.createStatement();
+	    Actividad actividadEncontrada = null;
+	    try {
+	        ResultSet resultset = statement.executeQuery("SELECT * FROM Activities WHERE title='" + titulo + "'");
+	        if (resultset.next()) {
+	            String creator = resultset.getString("creator");
+	            int id = resultset.getInt("id");
+	            boolean mandatory = resultset.getBoolean("mandatory");
+	            String description = resultset.getString("description");
+	            String difficulty = resultset.getString("difficulty");
+	            int duration = resultset.getInt("duration");
+	            boolean started = resultset.getBoolean("started");
+	            String datelimit = resultset.getString("datelimit");
+	            int calificacionMinima = resultset.getInt("calificacionMinima");
+	            String type = resultset.getString("type");
+	            String documentPath = resultset.getString("documentPath");
+
+	            actividadEncontrada = crearActividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, type, documentPath, calificacionMinima, getEstadosActividad(id), false);
+
+	            
+	            if (!this.actividades.containsKey(id)) {
+	                this.actividades.put(id, actividadEncontrada);
+	            }
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return actividadEncontrada; 
+	}
+
+	public LearningPath buscarLearningPathPorTitulo(String titulo) {
+	    for (LearningPath lp : this.learningPathsCreados.values()) {
+	        if (lp.getTitulo().equalsIgnoreCase(titulo)) {
+	            return lp;
+	        }
+	    }
+	    return null; 
+	}

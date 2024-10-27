@@ -116,7 +116,7 @@ public class Console {
 				runSession = menuAplicacionEstudiante(sistema, scanner);
 			}
 		}else {
-			menuAplicacionProfesor(sistema);
+			menuAplicacionProfesor(sistema,scanner); 
 		}
 	
 	}
@@ -259,10 +259,208 @@ public class Console {
 		else {
 			return false;
 		}
-		
+ 		
 		
 	}
-	public static boolean menuAplicacionProfesor(Sistema sistema) {
-		
+	
+	public static boolean menuAplicacionProfesor(Sistema sistema, Scanner scanner) throws SQLException {
+	    Profesor profesor = (Profesor) sistema.getSession();
+
+	    while (true) {
+	        System.out.println("\n--- Menú del Profesor ---");
+	        System.out.println("[1] Crear Learning Path");
+	        System.out.println("[2] Crear Actividad");
+	        System.out.println("[3] Calificar Actividad");
+	        System.out.println("[4] Calificar Examen");
+	        System.out.println("[5] Publicar reseña");
+	        System.out.println("[6] Ver Actividades Creadas");
+	        System.out.println("[7] Ver Learning Paths Creados");
+	        System.out.println("[8] Cerrar sesión");
+	        System.out.print("¿Qué desea hacer? ");
+
+	        int opcion = scanner.nextInt();
+	        scanner.nextLine(); 
+
+	        switch (opcion) {
+		        case 1:
+	                
+	                System.out.print("Ingrese el título del Learning Path: ");
+	                String tituloLP = scanner.nextLine();
+	
+	                System.out.print("Ingrese la descripción general: ");
+	                String descripcionGeneral = scanner.nextLine();
+	
+	                System.out.print("Ingrese la dificultad (Basico, Intermedio, Avanzado): ");
+	                String dificultad = scanner.nextLine();
+	
+	                System.out.print("Ingrese la duración en horas (Valores Enteros): ");
+	                int duracion = scanner.nextInt();
+	
+	                System.out.print("Ingrese la calificación inicial de 0 a 5 (Valores Enteros): ");
+	                int calificacion = scanner.nextInt();
+	                scanner.nextLine(); 
+	
+	                String fechaCreacion = LearningPath.obtenerFechaActual(); 
+	                LearningPath nuevoLP = new LearningPath(profesor.getLogin(), tituloLP, descripcionGeneral, dificultad, duracion, calificacion, fechaCreacion, fechaCreacion, sistema);
+	                profesor.crearLearningPath(nuevoLP);
+	                System.out.println("Learning Path creado con éxito.");
+	                break;
+	                
+		        case 2:
+		     
+		            System.out.print("Ingrese el título de la Actividad: ");
+		            String tituloActividad = scanner.nextLine();
+
+		            System.out.print("Ingrese la descripción de la Actividad: ");
+		            String descripcionActividad = scanner.nextLine();
+
+		            System.out.print("Ingrese el objetivo de la Actividad: ");
+		            String objetivoActividad = scanner.nextLine();
+
+		            System.out.print("Ingrese la dificultad (Basico, Intermedio, Avanzado): ");
+		            String nivelDificultad = scanner.nextLine();
+
+		            System.out.print("Ingrese la duración en minutos (Valores Enteros): ");
+		            int duracionActividad = scanner.nextInt();
+		            scanner.nextLine(); 
+
+		            System.out.print("¿Es obligatoria? (true/false): ");
+		            boolean obligatoria = scanner.nextBoolean();
+		            scanner.nextLine(); 
+
+		            System.out.print("Ingrese la fecha límite (Formato: YYYY-MM-DD): ");
+		            String fechaLimite = scanner.nextLine();
+
+		            
+		            Actividad nuevaActividad = new Actividad(tituloActividad, descripcionActividad, objetivoActividad, nivelDificultad, duracionActividad, obligatoria, profesor.getLogin(), fechaLimite);
+
+		            
+		            profesor.crearActividad(nuevaActividad);
+
+		            System.out.println("Actividad creada con éxito.");
+		            break;
+		            
+		        case 3:
+		            
+		            System.out.print("Ingrese el título de la Actividad que desea calificar: ");
+		            String tituloActividadCalificar = scanner.nextLine();
+		            
+		            
+		            Actividad actividadACalificar = profesor.buscarActividadPorTitulo(tituloActividadCalificar);
+		            if (actividadACalificar != null) {
+		                System.out.print("Ingrese el login del estudiante: ");
+		                String loginEstudiante = scanner.nextLine();
+		                
+		                Estudiante estudiante = sistema.buscarEstudiantePorLogin(loginEstudiante);
+		                if (estudiante != null) {
+		                    System.out.print("Ingrese la calificación (0 a 100): ");
+		                    int calificacionActividad = scanner.nextInt();
+		                    scanner.nextLine(); 
+		                    
+		                    profesor.calificarActividad(actividadACalificar, estudiante, calificacionActividad);
+		                    System.out.println("Actividad calificada con éxito.");
+		                } else {
+		                    System.out.println("Estudiante no encontrado.");
+		                }
+		            } else {
+		                System.out.println("Actividad no encontrada.");
+		            }
+		            break;
+		            
+		        case 4:
+		            
+		            System.out.print("Ingrese el ID del examen que desea calificar: ");
+		            int idExamen = scanner.nextInt();
+		            scanner.nextLine(); 
+
+		            Examen examen = sistema.getExamenById(idExamen); 
+		            if (examen == null) {
+		                System.out.println("Examen no encontrado.");
+		                break;
+		            }
+
+		            System.out.print("Ingrese el login del estudiante: ");
+		            String loginEstudiante = scanner.nextLine(); 
+
+		            Estudiante estudiante = sistema.buscarEstudiantePorLogin(loginEstudiante); 
+		            if (estudiante == null) {
+		                System.out.println("Estudiante no encontrado.");
+		                break;
+		            }
+
+		            
+		            System.out.print("Ingrese la calificación (0-5): ");
+		            int calificacionInput = scanner.nextInt(); 
+		            scanner.nextLine(); 
+
+		            if (calificacionInput < 0 || calificacionInput > 5) {
+		                System.out.println("Calificación inválida. Debe estar entre 0 y 5.");
+		            } else {
+		                
+		                examen.setCalificacion(estudiante, calificacionInput);
+		                System.out.println("Calificación registrada correctamente.");
+		            }
+		            break;
+
+
+
+		        case 5:
+		            
+		            System.out.print("Ingrese el título de la Actividad para la reseña: ");
+		            String tituloActividadReseña = scanner.nextLine();
+		            
+		            Actividad actividadAReseñar = profesor.buscarActividadPorTitulo(tituloActividadReseña);
+		            if (actividadAReseñar != null) {
+		                System.out.print("Escriba la reseña para la actividad: ");
+		                String reseña = scanner.nextLine();
+		                
+		                profesor.publicarReseña(actividadAReseñar, reseña);
+		                System.out.println("Reseña publicada con éxito.");
+		            } else {
+		                System.out.println("Actividad no encontrada.");
+		            }
+		            break;
+
+		            
+		        case 6:
+	                
+	                System.out.println("--- Actividades Creadas ---");
+	                for (Actividad actividad : profesor.getActividadesCreadas()) {
+	                    System.out.println("Título: " + actividad.getNombre());
+	                    System.out.println("Descripción: " + actividad.getDescripcion());
+	                    System.out.println("Dificultad: " + actividad.getDifficulty());
+	                    System.out.println("Duración: " + actividad.getDuration() + " minutos");
+	                    System.out.println("Fecha Límite: " + actividad.getDateLimit());
+	                    System.out.println("----------------------------");
+	                }
+	                break;
+
+	            case 7:
+	                
+	                System.out.println("--- Learning Paths Creados ---");
+	                for (LearningPath lp : profesor.getLearningPathsCreados()) {
+	                    System.out.println("Título: " + lp.getTitulo());
+	                    System.out.println("Descripción: " + lp.getDescripcion());
+	                    System.out.println("Dificultad: " + lp.getDifficulty());
+	                    System.out.println("Duración: " + lp.getDuration() + " horas");
+	                    System.out.println("Calificación: " + lp.getActivities());
+	                    System.out.println("----------------------------");
+	                }
+	                break;
+	                
+	            case 8:
+	                
+	                System.out.println("Cerrando sesión...");
+	                return false;                 
+	                
+		           
+	            default:
+	                System.out.println("Opción no válida. Intente de nuevo.");
+	        }
+	    }
 	}
 }
+
+
+
+
