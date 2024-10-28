@@ -27,6 +27,9 @@ public class Quiz extends Actividad {
 	public int getCalificacionMinima() {
 		return this.calificacionMinima;
 	}
+	public void setPreguntas(ArrayList<Pregunta> newPreguntas){
+		this.preguntas = newPreguntas;
+	}
 	
 	
 }

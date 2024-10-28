@@ -7,4 +7,10 @@ public class Pregunta {
 		this.enunciado = enunciado;
 		this.idPregunta = id;
 	}
+	public String getEnunciado() {
+		return this.enunciado;
+	}
+	public int getID() {
+		return this.idPregunta;
+	}
 }

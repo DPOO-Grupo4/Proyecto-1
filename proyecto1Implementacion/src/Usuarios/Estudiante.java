@@ -14,5 +14,10 @@ public class Estudiante extends Usuario{
 		this.learningPathsInscritos = lpsInscritos;
 		
 	}
-	
+	public ArrayList<LearningPath> getLPsInscritos(){
+		return this.learningPathsInscritos;
+	}
+	public void setLPsInscritos(ArrayList<LearningPath> newLPsInscritos) {
+		this.learningPathsInscritos = newLPsInscritos;
+	}
 }

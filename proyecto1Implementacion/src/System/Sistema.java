@@ -191,8 +191,9 @@ public class Sistema {
 				int calificacionMinima = resultset.getInt("calificacionMinima");
 				String type = resultset.getString("type");
 				String documentPath = resultset.getString("documentPath");
+				String comment = resultset.getString("comment");
 				//Actividad actividad = new Actividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, getEstadosActividad(id));
-				Actividad actividad = crearActividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, type, documentPath,calificacionMinima, getEstadosActividad(id), false);
+				Actividad actividad = crearActividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, type, documentPath,calificacionMinima, getEstadosActividad(id), false, comment);
 				if (!this.actividades.containsKey(id)) {
 					this.actividades.put(id, actividad);
 				}
@@ -255,14 +256,24 @@ public class Sistema {
 		}
 	}
 	
-	public Actividad crearActividad(String creator, int id, boolean mandatory, String description, String difficulty, int duration, boolean started, String datelimit, String type, String documentPath, int calificacionMinima,HashMap<String,String[]> states, boolean nuevo) throws SQLException {
+	public Actividad crearActividad(String creator, int id, boolean mandatory, String description, String difficulty, int duration, boolean started, String datelimit, String type, String documentPath, int calificacionMinima,HashMap<String,String[]> states, boolean nuevo, String comment) throws SQLException {
 		Statement globalStatement = this.connection.createStatement();
-		if (type.equals("actividadRecurso")) {
+		if (type.equals("recurso")) {
 			if (nuevo) {
 				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
-			
-				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.description = '"+description+"' AND A.creator = '"+creator+"'");
+						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
+				StringBuilder notin = new StringBuilder();
+				notin.append("(");
+				int conteo = 0;
+				for (int a : this.actividades.keySet()) {
+					notin.append(String.valueOf(a));
+					if (conteo != this.actividades.keySet().size()-1) {
+						notin.append(",");
+					}
+					conteo ++;
+				}
+				notin.append(")");
+				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.id NOT IN "+notin.toString());
 				if (resultset.next()) {
 					id = resultset.getInt("id");
 				}
@@ -276,10 +287,20 @@ public class Sistema {
 			
 		}else if (type.equals("quiz")) {
 			if (nuevo) {
-				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
-			
-				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.description = '"+description+"' AND A.creator = '"+creator+"'");
+				globalStatement.executeUpdate("INSERT INTO activities (creator,mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
+						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
+				StringBuilder notin = new StringBuilder();
+				notin.append("(");
+				int conteo = 0;
+				for (int a : this.actividades.keySet()) {
+					notin.append(String.valueOf(a));
+					if (conteo != this.actividades.keySet().size()-1) {
+						notin.append(",");
+					}
+					conteo ++;
+				}
+				notin.append(")");
+				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.id NOT IN "+notin.toString());
 				if (resultset.next()) {
 					id = resultset.getInt("id");
 				}
@@ -300,9 +321,20 @@ public class Sistema {
 		}else if (type.equals("examen")) {
 			if (nuevo) {
 				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
-			
-				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.description = '"+description+"' AND A.creator = '"+creator+"'");
+						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
+				StringBuilder notin = new StringBuilder();
+				notin.append("(");
+				int conteo = 0;
+				for (int a : this.actividades.keySet()) {
+					notin.append(String.valueOf(a));
+					if (conteo != this.actividades.keySet().size()-1) {
+						notin.append(",");
+					}
+					conteo ++;
+				}
+				notin.append(")");
+				
+				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.id NOT IN "+notin.toString());
 				if (resultset.next()) {
 					id = resultset.getInt("id");
 				}
@@ -323,9 +355,21 @@ public class Sistema {
 		}else if (type.equals("encuesta")) {
 			if (nuevo) {
 				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
-			
-				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.description = '"+description+"' AND A.creator = '"+creator+"'");
+						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
+				
+				StringBuilder notin = new StringBuilder();
+				notin.append("(");
+				int conteo = 0;
+				for (int a : this.actividades.keySet()) {
+					notin.append(String.valueOf(a));
+					if (conteo != this.actividades.keySet().size()-1) {
+						notin.append(",");
+					}
+					conteo ++;
+				}
+				notin.append(")");
+				
+				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.id NOT IN "+notin.toString());
 				if (resultset.next()) {
 					id = resultset.getInt("id");
 				}
@@ -347,16 +391,27 @@ public class Sistema {
 		}else if (type.equals("tarea")) {
 			if (nuevo) {
 				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(id)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"',"+String.valueOf(calificacionMinima) +")");
-			
-				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.description = '"+description+"' AND A.creator = '"+creator+"'");
+						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
+				StringBuilder notin = new StringBuilder();
+				notin.append("(");
+				int conteo = 0;
+				for (int a : this.actividades.keySet()) {
+					notin.append(String.valueOf(a));
+					if (conteo != this.actividades.keySet().size()-1) {
+						notin.append(",");
+					}
+					conteo ++;
+				}
+				notin.append(")");
+				String prueba = notin.toString();
+				ResultSet resultset = globalStatement.executeQuery("SELECT * FROM Activities A WHERE A.id NOT IN "+notin.toString());
 				if (resultset.next()) {
 					id = resultset.getInt("id");
 				}
 			}
 			Statement statement = this.connection.createStatement();
 			ResultSet resultset = statement.executeQuery("SELECT * FROM activities A WHERE A.id = "+ id+"");
-			String comment = "";
+			
 			if (resultset.next()) {
 				comment = resultset.getString("comment");
 			}
@@ -400,15 +455,16 @@ public class Sistema {
 	
 	public PreguntaOpcionMultiple crearPreguntaOpcionMultiple(int idPregunta, String Qstatement ) throws SQLException {
 		Statement statement = this.connection.createStatement();
-		ResultSet resultset = statement.executeQuery("SELECT OA.explicacion, OA.correct, OA.enunciado FROM optionsAsToQuestions OA WHERE OA.idPregunta = "+idPregunta+"");
+		ResultSet resultset = statement.executeQuery("SELECT OA.explicacion, OA.correct, OA.enunciado, OA.idOpcion FROM optionsAsToQuestions OA WHERE OA.idPregunta = "+idPregunta+"");
 		ArrayList<Opcion> opciones = new ArrayList<Opcion>();
 		Opcion respuestaCorrecta = null;
 		while (resultset.next()) {
 			String explicacion = resultset.getString("explicacion");
 			String enunciado = resultset.getString("enunciado");
 			boolean correct = resultset.getBoolean("correct");
+			int idOpcion = resultset.getInt("idOpcion");
 			
-			Opcion opcion = new Opcion(explicacion, correct, enunciado);
+			Opcion opcion = new Opcion(explicacion, correct, enunciado, idOpcion);
 			if (correct) {
 				respuestaCorrecta = opcion;
 				
@@ -452,13 +508,14 @@ public class Sistema {
 	public Opcion crearOpcionEscogidaPorUsuario(int idOpcion) throws SQLException {
 		
 		Statement statement = this.connection.createStatement();
-		ResultSet resultset = statement.executeQuery("SELECT * FROM optionsAsToQuestions OA WHERE OA.idOpcion = '"+String.valueOf(idOpcion)+"'");
+		ResultSet resultset = statement.executeQuery("SELECT * FROM optionsAsToQuestions OA WHERE OA.idOpcion = "+String.valueOf(idOpcion)+"");
 		if (resultset.next()) {
 			String explicacion = resultset.getString("explicacion");
 			String enunciado = resultset.getString("enunciado");
 			boolean correct = resultset.getBoolean("correct");
+			//int idOpcion = resultset.getInt("idOpcion");
 			
-			return new Opcion(explicacion, correct, enunciado);
+			return new Opcion(explicacion, correct, enunciado, idOpcion);
 		}
 		else {
 			return null;
@@ -516,7 +573,7 @@ public class Sistema {
 				int calificacionMinima = activity.getInt("calificacionMinima");
 				String documentPath = activity.getString("documentPath");
 				//Actividad actividad = new Actividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, getEstadosActividad(id));
-				Actividad actividad = crearActividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, type, documentPath, calificacionMinima, getEstadosActividad(id), false);
+				Actividad actividad = crearActividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, type, documentPath, calificacionMinima, getEstadosActividad(id), false, "");
 				
 				//ACAAAAAAAAAAAAAAAAA
 				if (!this.actividades.containsKey(id)) {
@@ -593,7 +650,7 @@ public class Sistema {
 	            String type = resultset.getString("type");
 	            String documentPath = resultset.getString("documentPath");
 
-	            actividadEncontrada = crearActividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, type, documentPath, calificacionMinima, getEstadosActividad(id), false);
+	            actividadEncontrada = crearActividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, type, documentPath, calificacionMinima, getEstadosActividad(id), false, "");
 
 	            
 	            if (!this.actividades.containsKey(id)) {
@@ -614,10 +671,97 @@ public class Sistema {
 	    }
 	    return null; 
 	}
+	/*
 	public void crearNuevaPregunta(String enunciado, int idActividad, String typeQ) throws SQLException {
 		Statement statement = this.connection.createStatement();
 		statement.executeUpdate("INSERT INTO questionsAsToQuestionaries (idActividad) VALUES ("+String.valueOf(idActividad)+")");
 		ResultSet resultset = statement.executeQuery("SELECT * FROM questionsAsToQuestionaries QA WHERE QA.idPregunta");
+		
+	}
+	*/
+	public int insertarPreguntaQuestionsAsToQuestionaries(int idActividad) throws SQLException {
+		Statement statement = this.connection.createStatement();
+		//Statement statement = this.connection.prepareStatement("INSERT INTO questionsAsToQuestionaries (idActividad) VALUES ("+String.valueOf(idActividad)+")", Statement.RETURN_GENERATED_KEYS);
+		statement.executeUpdate("INSERT INTO questionsAsToQuestionaries (idActividad) VALUES ("+String.valueOf(idActividad)+")", Statement.RETURN_GENERATED_KEYS);
+		ResultSet resultset = statement.getGeneratedKeys();
+		int idPregunta = 0;
+		if (resultset.next()) {
+			idPregunta = resultset.getInt(1);
+			
+		}
+		return idPregunta;
+	}
+	public void insertarQuestions(int idPregunta, String typeQ, String enunciado) throws SQLException {
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate ("INSERT INTO questions (idPregunta, typeQ, \"statement\") VALUES ("+String.valueOf(idPregunta)+",'"+typeQ+"','"+enunciado+"')");
+	}
+	
+	public int insertarOptionsAsToQuestions(int idPregunta, String enunciado,String explicacion, boolean correct) throws SQLException {
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate("INSERT INTO optionsAsToQuestions (idPregunta, enunciado ,explicacion, correct) VALUES ("+String.valueOf(idPregunta)+",'"+enunciado+"','"+explicacion+"',"+String.valueOf(correct)+")", Statement.RETURN_GENERATED_KEYS);
+		ResultSet resultset = statement.getGeneratedKeys();
+		int idOpcion = 0;
+		if (resultset.next()) {
+			idOpcion = resultset.getInt(1);
+		}
+		return idOpcion;
+	}
+	public void insertarCreatedActivities(int idActividad, String nameLPAssociated) throws SQLException {
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate("INSERT INTO createdActivities (id, nameLPAssociated) VALUES ("+String.valueOf(idActividad)+",'"+nameLPAssociated+"')");
+	}
+	public HashMap<String,LearningPath> getLPs(){
+		return this.learningPathsCreados;
+	}
+	
+	public void actualizarRespuestaUsuario(Usuario usuario, int idPregunta, String idOpcion, String respuesta, boolean yaEstabaCreado) throws SQLException {
+		Statement statement = this.connection.createStatement();
+		if (!yaEstabaCreado) {
+			statement.executeUpdate("INSERT INTO answersActivity (idPregunta, idOpcion, usuario, respuesta) VALUES ("+String.valueOf(idPregunta)+","+idOpcion+",'"+usuario.getLogin()+"','"+respuesta+"')");
+		}else {
+			statement.execute("UPDATE answersActivity SET respuesta = '"+respuesta+"' WHERE idPregunta = "+String.valueOf(idPregunta)+"AND usuario = '"+usuario.getLogin()+"'");
+		}
+	}
+	public void inscribirLP(LearningPath LP, Estudiante estudiante) throws SQLException { //Esto esta sujeto a cambios, la aplicacion no contempla por ahora que un profesor pueda inscribir un learningpath
+		Statement statement = this.connection.createStatement();
+		ArrayList<LearningPath> LPsInscritos = estudiante.getLPsInscritos();
+		HashMap<String, Boolean> yaInscritos = new HashMap<String,Boolean>();
+		for (LearningPath lp : LPsInscritos) {
+			yaInscritos.put(lp.getTitulo(), true);
+		}
+		if (!yaInscritos.containsKey(LP.getTitulo())) {
+			statement.executeUpdate("INSERT INTO CreatedLearningPaths (login, nameLP) VALUES ('"+estudiante.getLogin()+"','"+LP.getTitulo()+"')");
+			LPsInscritos.add(LP);
+			estudiante.setLPsInscritos(LPsInscritos);
+		}
+		
+		
+	}
+	public Estudiante getEstudiante(String login) {
+		if (this.estudiantes.containsKey(login)) {
+			return this.estudiantes.get(login);
+		}else {
+			return null;
+		}
+	}
+	public Object[] getAnswersActivity(int idPregunta, String login) throws SQLException {
+		Statement statement = this.connection.createStatement();
+		ResultSet resultset = statement.executeQuery("SELECT * FROM answersActivity AA WHERE AA.idPregunta = "+String.valueOf(idPregunta)+ " AND AA.usuario = '"+login+"'");
+		Object[] array = new Object[3];
+		if (resultset.next()) {
+			String respuesta = resultset.getString("respuesta");
+			int idOpcion = resultset.getInt("idOpcion");
+			array[0] = respuesta;
+			array[1] = idOpcion;
+			array[2] = this.crearOpcionEscogidaPorUsuario(idOpcion);
+		}
+		
+		return array;
+		
+	}
+	public void insertarAnswersActivity(int idPregunta, int idOpcion, String login, String respuesta) throws SQLException {
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate("INSERT INTO answersActivity (idPregunta, idOpcion, usuario, respuesta) VALUES ("+String.valueOf(idPregunta)+","+String.valueOf(idOpcion)+",'"+login+"','"+respuesta+"')");
 		
 	}
 }

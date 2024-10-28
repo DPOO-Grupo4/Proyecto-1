@@ -11,4 +11,11 @@ public class Encuesta extends Actividad {
 		this.preguntas = preguntas;
 		this.respuestas = respuestas;
 	}
+	public ArrayList<Pregunta> getPreguntas(){
+		return this.preguntas;
+		
+	}
+	public void setPreguntas(ArrayList<Pregunta> preguntas) {
+		this.preguntas = preguntas;
+	}
 }

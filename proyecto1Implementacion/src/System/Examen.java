@@ -22,4 +22,8 @@ public void setCalificacion(Estudiante estudiante, int calificacion) {
         return;
     }
 
-}}
+}
+public void setPreguntas(ArrayList<Pregunta> preguntas) {
+	this.preguntas = preguntas;
+}
+}

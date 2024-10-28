@@ -6,9 +6,12 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Scanner;
 
 import System.Actividad;
+import System.ActividadRecurso;
+import System.Encuesta;
 import System.Examen;
 import System.LearningPath;
 import System.Opcion;
@@ -16,8 +19,10 @@ import System.Pregunta;
 import System.PreguntaOpcionMultiple;
 import System.Quiz;
 import System.Sistema;
+import System.Tarea;
 import Usuarios.Estudiante;
 import Usuarios.Profesor;
+import Usuarios.Usuario;
 
 public class Console {
 	
@@ -109,6 +114,7 @@ public class Console {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.out.println("Digito mal su usuario o contraseña");
 		}
 	}
 	public static void menuAplicacion(Sistema sistema, Scanner scanner) throws SQLException {
@@ -124,10 +130,11 @@ public class Console {
 	}
 	public static boolean menuAplicacionEstudiante(Sistema sistema, Scanner scanner) throws SQLException {
 		System.out.println("\n[1] Consultar mis learning paths inscritos \n");
-		System.out.println("[2] Cerrar sesión\n");
+		System.out.println("\n[2] Inscribir un learning path\n");
+		System.out.println("[3] Cerrar sesión\n");
 		System.out.println("¿Qué desea hacer?");
 		int opcion = scanner.nextInt();
-		while (opcion != 1 && opcion != 2) {
+		while (opcion != 1 && opcion != 2 && opcion != 3) {
 			System.out.println("Digito una opcion que no existe");
 			opcion = scanner.nextInt();
 		}
@@ -136,12 +143,26 @@ public class Console {
 			while (runMenuLPsInscritos) {
 				runMenuLPsInscritos = menuLearningPathsInscritos(sistema, scanner);
 			}
-		}
-		if (opcion == 2) {
+		}else if (opcion == 3) {
 			return false;
-		}else {
+		}else if (opcion == 2){
+			ArrayList<LearningPath> LPsInscritos = sistema.getLPsInscritos(sistema.getSession().getLogin());
+			HashMap<String, LearningPath> learningPaths = sistema.getLPs();
+			ArrayList<String> titulosLPs = new ArrayList<>();
+			for (int i = 0; i < learningPaths.size(); i ++) {
+				System.out.println("["+String.valueOf(i)+"] " + (new ArrayList<LearningPath> (learningPaths.values())).get(i).getTitulo());
+				titulosLPs.add( (new ArrayList<LearningPath> (learningPaths.values())).get(i).getTitulo());
+			}
+			System.out.println("["+learningPaths.size()+"] Volver");
+			System.out.println("De la lista de Learning Paths en el sistema ¿ Cúal desea inscribir ?");
+			int opcioni = scanner.nextInt();
+			sistema.inscribirLP(learningPaths.get(titulosLPs.get(opcioni)),(Estudiante) sistema.getSession());
 			return true;
 		}
+		else {
+			return true;
+		}
+		return true;
 	}
 	public static boolean menuLearningPathsInscritos(Sistema sistema, Scanner scanner) throws SQLException {
 		ArrayList<LearningPath> LPsInscritos = sistema.getLPsInscritos(sistema.getSession().getLogin());
@@ -230,6 +251,7 @@ public class Console {
 			for (int i =1 ; i <= preguntas.size(); i++) {
 				System.out.println("Pregunta "+String.valueOf(i)+":");
 				PreguntaOpcionMultiple pregunta= (PreguntaOpcionMultiple) preguntas.get(i-1);
+				System.out.println(pregunta.getEnunciado());
 				ArrayList<Opcion> opciones = pregunta.getOpciones();
 				for (int j = 1; j<=opciones.size(); j++) {
 					System.out.println("Opcion " + String.valueOf(j));
@@ -238,6 +260,8 @@ public class Console {
 				}
 				System.out.println("Seleccione la opcion que considere correcta :");
 				int respuestaUsuario = scanner.nextInt() -1;
+				//sistema.insertarAnswersActiyity();
+				sistema.actualizarRespuestaUsuario(sistema.getSession(), pregunta.getID(), String.valueOf(opciones.get(respuestaUsuario).getID()), "NULL", false);
 				if (opciones.get(respuestaUsuario).getCorrect()) {
 					respuestasBuenas+=1;
 				}
@@ -257,7 +281,86 @@ public class Console {
 			}
 			Examen actividad = (Examen) actividadEscogida;
 			ArrayList<Pregunta> preguntas = actividad.getPreguntas();
+			for (int i =1 ; i <= preguntas.size(); i++) {
+				System.out.println("Pregunta "+String.valueOf(i)+":");
+				Pregunta pregunta= preguntas.get(i-1);
+				//System.out.println("Pregunta "+String.valueOf(i));
+				System.out.println(pregunta.getEnunciado());
+				System.out.println("A continuación escriba su respuesta");
+				if (i == 1) {
+					scanner.nextLine();
+				}
+				String respuestaUsuario = scanner.nextLine();
+				scanner.nextLine();
+				sistema.actualizarRespuestaUsuario(sistema.getSession(), pregunta.getID(), "NULL", respuestaUsuario, false);
+				System.out.println("Su respuesta fue enviada con exito");
+			}
+			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0], LocalDate.now().toString(), false, false);
+			return true;
+		}else if (actividadEscogida.getClass().getSimpleName().equals("Encuesta") & opcion3==0 & !yaAprobada) {
+			HashMap<String, String[]> state = actividadEscogida.getState();
+			if (!state.containsKey(sistema.getSession().getLogin())) {
+				state.put(sistema.getSession().getLogin(), new String[3]);
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString() , "", false, false);
+			}
+			Encuesta actividad = (Encuesta) actividadEscogida;
+			ArrayList<Pregunta> preguntas = actividad.getPreguntas();
+			for (int i =1 ; i <= preguntas.size(); i++) {
+				System.out.println("Pregunta "+String.valueOf(i)+":");
+				Pregunta pregunta= preguntas.get(i-1);
+				//System.out.println("Pregunta "+String.valueOf(i));
+				System.out.println(pregunta.getEnunciado());
+				System.out.println("A continuación escriba su respuesta");
+				if ( i == 1) {
+					scanner.nextLine();
+				}
+				String respuestaUsuario = scanner.nextLine();
+				scanner.nextLine();
+				sistema.actualizarRespuestaUsuario(sistema.getSession(), pregunta.getID(), "NULL", respuestaUsuario, false);
+				
+			}
+			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0], LocalDate.now().toString(), true, false);
+			return true;
+		}else if (actividadEscogida.getClass().getSimpleName().equals("ActividadRecurso") & opcion3==0 & !yaAprobada) {
+			//sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString(),"" ,false, false);
+			HashMap<String, String[]> state = actividadEscogida.getState();
+			if (!state.containsKey(sistema.getSession().getLogin())) {
+				state.put(sistema.getSession().getLogin(), new String[3]);
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString() , "", false, false);
+			}
+			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString(),"" ,false, false);
+			ActividadRecurso actividadRecurso = (ActividadRecurso) actividadEscogida;
+			System.out.println("HIPERVINCULO : "+ actividadRecurso.getDocumentPath());
+			System.out.println("[0] volver");
+			int opcioni = scanner.nextInt();
+			while (opcioni != 0) {
+				opcioni = scanner.nextInt();
+			}if (opcioni == 0) {
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0],LocalDate.now().toString() ,false, false);
+				return false;
+			}
+			return true;
+		}else if (actividadEscogida.getClass().getSimpleName().equals("Tarea") & opcion3==0 & !yaAprobada) {
+			//sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString(),"" ,false, false);
+			HashMap<String, String[]> state = actividadEscogida.getState();
+			if (!state.containsKey(sistema.getSession().getLogin())) {
+				state.put(sistema.getSession().getLogin(), new String[3]);
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString() , "", false, false);
+			}
+			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString(),"" ,false, false);
+			Tarea tarea = (Tarea) actividadEscogida;
+			System.out.println("Comentario : " + tarea.getComentario()); //Se supone que el comentario les dice donde enviar la tarea que hicieron
+			System.out.println("[0] completar ");
+			int opcioni = scanner.nextInt();
+			while (opcioni != 0) {
+				opcioni = scanner.nextInt();
+			}if (opcioni == 0) {
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0],LocalDate.now().toString() ,false, false);
+				return false;
+			}
+			return true;
 		}
+
 		else {
 			return false;
 		}
@@ -273,11 +376,11 @@ public class Console {
 	        System.out.println("[1] Crear Learning Path");
 	        System.out.println("[2] Editar Learning Path");
 	        System.out.println("[3] Calificar Actividad");
-	        System.out.println("[4] Calificar Examen");
-	        System.out.println("[5] Publicar reseña");
-	        System.out.println("[6] Ver Actividades Creadas");
-	        System.out.println("[7] Ver Learning Paths Creados");
-	        System.out.println("[8] Cerrar sesión");
+	        //System.out.println("[4] Calificar Examen");
+	        //System.out.println("[5] Publicar reseña");
+	        System.out.println("[4] Ver Actividades Creadas");
+	        System.out.println("[5] Ver Learning Paths Creados");
+	        System.out.println("[6] Cerrar sesión");
 	        System.out.print("¿Qué desea hacer? ");
 
 	        int opcion = scanner.nextInt();
@@ -288,9 +391,14 @@ public class Console {
 	                
 	                System.out.print("Ingrese el título del Learning Path: ");
 	                String tituloLP = scanner.next();
+	                if (sistema.getLPs().containsKey(tituloLP)){
+	                	System.out.println("Ese nombre ya fue usado para otro learning path");
+	                	break;
+	                }
 	
 	                System.out.print("Ingrese la descripción general: ");
-	                String descripcionGeneral = scanner.next();
+	                String descripcionGeneral = scanner.nextLine();
+	                scanner.nextLine();
 	
 	                System.out.print("Ingrese la dificultad (Basico, Intermedio, Avanzado): ");
 	                String dificultad = scanner.next();
@@ -319,98 +427,31 @@ public class Console {
 		        	System.out.println("["+String.valueOf(LPs.size()+1)+"] Volver");
 		        	System.out.println("__________________________________________");
 		        	int opcioni = scanner.nextInt();
-		        	while (opcioni != LPs.size()+1) {
+		        	while (opcioni<1 & opcion >LPs.size()) {
 		        		opcioni = scanner.nextInt();
-		        		if (opcioni >=1 & opcioni<=LPs.size()) {
-			        		menuEdicion(sistema, scanner, LPs.get(opcioni));
-			        	}
+		        		
+		        		
 		        	}
+		        	if (opcioni  == LPs.size()+1) {
+		        		break;
+		        	}
+		        	menuEdicion(sistema, scanner, LPs.get(opcioni-1));
+		        	
 		        	
 		            break;
 		            
 		        case 3:
 		            
-		            System.out.print("Ingrese el título de la Actividad que desea calificar: ");
-		            String tituloActividadCalificar = scanner.nextLine();
-		            
-		            
-		            Actividad actividadACalificar = profesor.buscarActividadPorTitulo(tituloActividadCalificar);
-		            if (actividadACalificar != null) {
-		                System.out.print("Ingrese el login del estudiante: ");
-		                String loginEstudiante = scanner.nextLine();
-		                
-		                Estudiante estudiante = sistema.buscarEstudiantePorLogin(loginEstudiante);
-		                if (estudiante != null) {
-		                    System.out.print("Ingrese la calificación (0 a 100): ");
-		                    int calificacionActividad = scanner.nextInt();
-		                    scanner.nextLine(); 
-		                    
-		                    profesor.calificarActividad(actividadACalificar, estudiante, calificacionActividad);
-		                    System.out.println("Actividad calificada con éxito.");
-		                } else {
-		                    System.out.println("Estudiante no encontrado.");
-		                }
-		            } else {
-		                System.out.println("Actividad no encontrada.");
+		            boolean runMenuCalificar = true;
+		            while (runMenuCalificar) {
+		            	runMenuCalificar = menuCalificarLP(sistema, scanner);
 		            }
+		            
 		            break;
+		            
+		        
 		            
 		        case 4:
-		            
-		            System.out.print("Ingrese el ID del examen que desea calificar: ");
-		            int idExamen = scanner.nextInt();
-		            scanner.nextLine(); 
-
-		            Examen examen = sistema.getExamenById(idExamen); 
-		            if (examen == null) {
-		                System.out.println("Examen no encontrado.");
-		                break;
-		            }
-
-		            System.out.print("Ingrese el login del estudiante: ");
-		            String loginEstudiante = scanner.nextLine(); 
-
-		            Estudiante estudiante = sistema.buscarEstudiantePorLogin(loginEstudiante); 
-		            if (estudiante == null) {
-		                System.out.println("Estudiante no encontrado.");
-		                break;
-		            }
-
-		            
-		            System.out.print("Ingrese la calificación (0-5): ");
-		            int calificacionInput = scanner.nextInt(); 
-		            scanner.nextLine(); 
-
-		            if (calificacionInput < 0 || calificacionInput > 5) {
-		                System.out.println("Calificación inválida. Debe estar entre 0 y 5.");
-		            } else {
-		                
-		                examen.setCalificacion(estudiante, calificacionInput);
-		                System.out.println("Calificación registrada correctamente.");
-		            }
-		            break;
-
-
-
-		        case 5:
-		            
-		            System.out.print("Ingrese el título de la Actividad para la reseña: ");
-		            String tituloActividadReseña = scanner.nextLine();
-		            
-		            Actividad actividadAReseñar = profesor.buscarActividadPorTitulo(tituloActividadReseña);
-		            if (actividadAReseñar != null) {
-		                System.out.print("Escriba la reseña para la actividad: ");
-		                String reseña = scanner.nextLine();
-		                
-		                profesor.publicarReseña(actividadAReseñar, reseña);
-		                System.out.println("Reseña publicada con éxito.");
-		            } else {
-		                System.out.println("Actividad no encontrada.");
-		            }
-		            break;
-
-		            
-		        case 6:
 	                
 	                System.out.println("--- Actividades Creadas ---");
 	                for (Actividad actividad : profesor.getActividadesCreadas()) {
@@ -423,7 +464,7 @@ public class Console {
 	                }
 	                break;
 
-	            case 7:
+	            case 5:
 	                
 	                System.out.println("--- Learning Paths Creados ---");
 	                for (LearningPath lp : profesor.getLearningPathsCreados()) {
@@ -436,7 +477,7 @@ public class Console {
 	                }
 	                break;
 	                
-	            case 8:
+	            case 6:
 	                
 	                System.out.println("Cerrando sesión...");
 	                return false;                 
@@ -447,34 +488,37 @@ public class Console {
 	        }
 	    }
 	}
-	public static boolean menuEdicion(Sistema sistema, Scanner scanner, LearningPath LP) {
+	public static boolean menuEdicion(Sistema sistema, Scanner scanner, LearningPath LP) throws SQLException {
 		System.out.println("___________________________________");
 		System.out.println("Bienvenido al menu de edicion ");
 		System.out.println("Ahora mismo esta editando el Learning Path : "+ LP.getTitulo());
 		System.out.println("[0] Añadir actividad");
-		System.out.println("[1] Remover alguna actividad");
-		System.out.println("[2] Salir");
+		//System.out.println("[1] Remover alguna actividad");
+		System.out.println("[1] Salir");
 		int opcion = scanner.nextInt();
 		while (opcion != 0 & opcion != 1 & opcion != 2) {
 			opcion = scanner.nextInt();
 		}
 		
-		if (opcion == 2) {
+		if (opcion == 1) {
 			return false;
 		}else if (opcion == 0) {
 			boolean runMenuCA = true;
 			while (runMenuCA) {
 				runMenuCA = menuCreacionActividad(sistema, scanner, LP);
 			}
+			return true;
 		}else {
-			
+			return true;
 		}
 	}
 	public static boolean menuCreacionActividad(Sistema sistema, Scanner scanner, LearningPath LP) throws SQLException {
 		System.out.println("______________________________________");
 		System.out.println("A continuación se le va a pedir que digite una información necesaria para la creacion de la actividad");
 		System.out.println("DESCRIPCION : ");
-		String descripcion = scanner.next();
+		scanner.nextLine();
+		String descripcion = scanner.nextLine();
+		scanner.nextLine();
 		System.out.println("DIFICULTAD : ");
 		String dificultad = scanner.next();
 		System.out.println("OBLIGATORIA (true, false) : ");
@@ -484,12 +528,327 @@ public class Console {
 		System.out.println("FECHA LÍMITE : ");
 		String dateLimit = scanner.next();
 		String documentPath = "";
-		System.out.println("TIPO (Quiz, Examen, Encuesta, Tarea, actividadRecurso");
+		int calificacionMinima = 0;
+		System.out.println("TIPO (quiz, examen, encuesta, tarea, recurso)");
 		String tipo = scanner.next();
+		if (tipo.equals("recurso")) {
+			System.out.println("Digite el hipervinculo del recurso del que desea hacer display");
+			documentPath = scanner.next();
+		}
+		if (tipo.equals("quiz")) {
+			System.out.println("Digite la calificacion mínima necesaria para aprobar esta actividad");
+			calificacionMinima = scanner.nextInt();
+		}
 		
-		Actividad newActividad = sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, false, dateLimit, tipo, documentpath, 0, new HashMap<String, String[]>(), true);
+		
+		if (tipo.equals("quiz")) {
+			
+			Quiz newActividad = (Quiz) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, false, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true,"");
+			
+			System.out.println("Usted eligio una actividad de tipo quiz");
+			System.out.println("Por ello a continuación digite el numero de preguntas que quiere que su actividad contenga");
+			int cantidadPreguntas = scanner.nextInt();
+			//ArrayList<Pregunta> preguntas = new ArrayList<Pregunta>();
+			newActividad.setPreguntas(new ArrayList<Pregunta>());
+			ArrayList<Pregunta> preguntas = newActividad.getPreguntas();
+			for (int i = 1 ; i<= cantidadPreguntas; i ++) {
+				System.out.println("-------------------");
+				System.out.println("Pregunta ("+String.valueOf(i)+")" );
+				System.out.println("-------------------");
+				System.out.println("Por favor digite el enunciado de su pregunta : ");
+				scanner.nextLine();
+				String enunciado = scanner.nextLine();
+				scanner.nextLine();
+				int idPregunta = sistema.insertarPreguntaQuestionsAsToQuestionaries(newActividad.getID());
+				
+				if (tipo.equals("quiz")) {
+					sistema.insertarQuestions(idPregunta, "opcionMultiple", enunciado);
+					System.out.println("Cuantas opciones desea añadir a su pregunta (Recuerde son maximo 4 opciones)");
+					int cantidadOpciones = scanner.nextInt();
+					while (cantidadOpciones > 4 & cantidadOpciones <1) {
+						cantidadOpciones = scanner.nextInt();
+					}
+					ArrayList<Opcion> opciones = new ArrayList<Opcion>();
+					for (int j = 1 ; j<=cantidadOpciones; j ++) {
+						System.out.println("OPCION ("+String.valueOf(j)+")");
+						System.out.println("Enunciado de la OPCION : ");
+						if (j== 1) {
+							scanner.nextLine();
+						}
+						String enunciadoOpcion = scanner.nextLine();
+						scanner.nextLine();
+						System.out.println("¿La opcion es correcta? Digite true o false (true: Sí, false : No)");
+						boolean correct = scanner.nextBoolean();
+						System.out.println("¿Por qué la opcion es correcta o incorrecta?");
+						scanner.nextLine();
+						String explicacion = scanner.nextLine();
+						scanner.nextLine();
+						int idOpcion = sistema.insertarOptionsAsToQuestions(idPregunta, enunciadoOpcion, explicacion, correct);
+						Opcion newOpcion	 = sistema.crearOpcionEscogidaPorUsuario(idOpcion);
+						opciones.add(newOpcion);
+					}
+					PreguntaOpcionMultiple newPregunta = sistema.crearPreguntaOpcionMultiple(idPregunta, enunciado);
+					preguntas.add(newPregunta);
+				}
+				
+			}
+			newActividad.setPreguntas(preguntas);
+			sistema.insertarCreatedActivities(newActividad.getID(), LP.getTitulo());
+			ArrayList<Actividad> actividades = ((Profesor) sistema.getSession()).getActividadesCreadas();
+			actividades.add(newActividad);
+			((Profesor) sistema.getSession()).setActividadesCreadas(actividades);
+		}
+		else if (tipo.equals("examen")) {
+			Examen newActividad = (Examen) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, false, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true, "");
+		
+			System.out.println("Usted eligio una actividad de tipo examen");
+			System.out.println("Por ello a continuación digite el numero de preguntas que quiere que su actividad contenga");
+			int cantidadPreguntas = scanner.nextInt();
+			//ArrayList<Pregunta> preguntas = new ArrayList<Pregunta>();
+			newActividad.setPreguntas(new ArrayList<Pregunta>());
+			ArrayList<Pregunta> preguntas = newActividad.getPreguntas();
+			for (int i = 1 ; i<= cantidadPreguntas; i ++) {
+				System.out.println("-------------------");
+				System.out.println("Pregunta ("+String.valueOf(i)+")" );
+				System.out.println("-------------------");
+				System.out.println("Por favor digite el enunciado de su pregunta : ");
+				if (i == 1) {
+					scanner.nextLine();
+				}
+				String enunciado = scanner.nextLine();
+				scanner.nextLine();
+				int idPregunta = sistema.insertarPreguntaQuestionsAsToQuestionaries(newActividad.getID());
+				sistema.insertarQuestions(idPregunta, "abierta", enunciado);
+				Pregunta pregunta = new Pregunta(enunciado, idPregunta);
+				preguntas.add(pregunta);
+			}
+			newActividad.setPreguntas(preguntas);
+			sistema.insertarCreatedActivities(newActividad.getID(), LP.getTitulo());
+			ArrayList<Actividad> actividades = ((Profesor) sistema.getSession()).getActividadesCreadas();
+			actividades.add(newActividad);
+			((Profesor) sistema.getSession()).setActividadesCreadas(actividades);
+		}
+		else if (tipo.equals("encuesta")) {
+			Encuesta newActividad = (Encuesta) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, false, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true, "");
+			
+			System.out.println("Usted eligio una actividad de tipo encuesta");
+			System.out.println("Por ello a continuación digite el numero de preguntas que quiere que su actividad contenga");
+			int cantidadPreguntas = scanner.nextInt();
+			//ArrayList<Pregunta> preguntas = new ArrayList<Pregunta>();
+			newActividad.setPreguntas(new ArrayList<Pregunta>());
+			ArrayList<Pregunta> preguntas = newActividad.getPreguntas();
+			for (int i = 1 ; i<= cantidadPreguntas; i ++) {
+				System.out.println("-------------------");
+				System.out.println("Pregunta ("+String.valueOf(i)+")" );
+				System.out.println("-------------------");
+				System.out.println("Por favor digite el enunciado de su pregunta : ");
+				if (i==1) {
+					scanner.nextLine();
+				}
+				String enunciado = scanner.nextLine();
+				scanner.nextLine();
+				int idPregunta = sistema.insertarPreguntaQuestionsAsToQuestionaries(newActividad.getID());
+				sistema.insertarQuestions(idPregunta, "abierta", enunciado);
+				Pregunta pregunta = new Pregunta(enunciado, idPregunta);
+				preguntas.add(pregunta);
+			}
+			newActividad.setPreguntas(preguntas);
+			sistema.insertarCreatedActivities(newActividad.getID(), LP.getTitulo());
+			ArrayList<Actividad> actividades = ((Profesor) sistema.getSession()).getActividadesCreadas();
+			actividades.add(newActividad);
+			((Profesor) sistema.getSession()).setActividadesCreadas(actividades);
+		}
+		else if (tipo.equals("recurso")) {
+			System.out.println("Usted eligio una actividad de tipo recurso");
+			//System.out.println("Por favor digite a continuación el hipervinculo que desea que los estudiantes visualicen");
+			//documentPath = scanner.next();
+			ActividadRecurso newActividad = (ActividadRecurso) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, false, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true, "");
+			sistema.insertarCreatedActivities(newActividad.getID(), LP.getTitulo());
+			ArrayList<Actividad> actividades = ((Profesor) sistema.getSession()).getActividadesCreadas();
+			actividades.add(newActividad);
+			((Profesor) sistema.getSession()).setActividadesCreadas(actividades);
+		}else if (tipo.equals("tarea")) {
+			System.out.println("Usted eligio una actividad de tipo tarea");
+			System.out.println("Por favor digite a continuación el comentario que desea añadir a la tarea : ");
+			scanner.nextLine();
+			String comment = scanner.nextLine();
+			scanner.nextLine();
+			Tarea newActividad = (Tarea) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, false, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true, comment);
+			sistema.insertarCreatedActivities(newActividad.getID(), LP.getTitulo());
+			ArrayList<Actividad> actividades = ((Profesor) sistema.getSession()).getActividadesCreadas();
+			actividades.add(newActividad);
+			((Profesor) sistema.getSession()).setActividadesCreadas(actividades);
+		}
 		
 		System.out.println("______________________________________");
+		return false;
+	}
+	
+	public static boolean menuCalificarLP(Sistema sistema, Scanner scanner) throws SQLException {
+		System.out.println("_______________________________________________");
+		System.out.println("¡Bienvenido! Acá podrá calificar actividades (cambiar el estado de los estudiante de aprobado a desaprobado y viceversa");
+		System.out.println("Escoja que learning path desea corregir");
+		ArrayList<LearningPath> LPs =  ((Profesor) sistema.getSession()).getLPs();
+    	for (int i = 1 ; i <= LPs.size(); i++) {
+    		System.out.println("["+String.valueOf(i)+"]"+LPs.get(i-1).getTitulo());
+    	}
+    	System.out.println("["+String.valueOf(LPs.size()+1)+"] Volver");
+    	System.out.println("Opcion : ");
+    	int opcioni = scanner.nextInt();
+    	if (opcioni == LPs.size()+1) {
+    		return false;
+    	}else {
+    		LearningPath LPEscogido = LPs.get(opcioni-1);
+    		boolean runMenuCalificarActividad = true;
+    		while (runMenuCalificarActividad) {
+    			runMenuCalificarActividad = menuCalificarActividad(sistema, scanner, LPEscogido);
+    		}
+    		return true;
+    	}
+    	
+	}
+	public static boolean menuCalificarActividad(Sistema sistema, Scanner scanner, LearningPath LPEscogido) throws SQLException {
+		System.out.println("_______________________________________________");
+		System.out.println("ACTIVIDADES DEL LEARNING PATH ");
+		ArrayList<Actividad> activities = LPEscogido.getActivities();
+		for (int i = 0; i < activities.size();i++) {
+			System.out.println("["+String.valueOf(i)+"] " + activities.get(i).getID());
+		}
+		System.out.println("["+String.valueOf(activities.size())+"] Volver");
+		System.out.println("Seleccione que actividad de "+LPEscogido.getTitulo()+"desea calificar : ");
+		int opcioni = scanner.nextInt();
+		if (opcioni == activities.size()) {
+			return false;
+		}else if  (opcioni>=0 & opcioni<activities.size()){
+			Actividad ACEscogida = activities.get(opcioni);
+			boolean runMenuCalificarEnlistados = true;
+			while (runMenuCalificarEnlistados) {
+				runMenuCalificarEnlistados = MenuCalificarEnlistados(sistema, scanner, ACEscogida);
+			}
+			return true;
+		}else {
+			
+			return true;
+		}
+		
+	}
+	
+	public static boolean MenuCalificarEnlistados(Sistema sistema, Scanner scanner, Actividad ACEscogida) throws SQLException {
+		System.out.println("____________________________________________");
+		System.out.println("USUARIOS QUE YA HICIERON LA ACTIVIDAD");
+		ArrayList<Estudiante> enlistados = new ArrayList<Estudiante>();
+		for (Iterator<String> iterator = ACEscogida.getState().keySet().iterator(); iterator.hasNext();) {
+			String name = iterator.next();
+			enlistados.add(sistema.getEstudiante(name));
+			
+		}
+		for (int i = 0; i < enlistados.size(); i++) {
+			System.out.println("["+String.valueOf(i)+"] " + enlistados.get(i).getLogin());
+		}
+		System.out.println("["+String.valueOf(enlistados.size())+"] Volver");
+		int opcioni = scanner.nextInt();
+		if (opcioni == enlistados.size()) {
+			return false;
+		}else {
+			Estudiante estudiante = enlistados.get(opcioni);
+			boolean runMenuCalificarEnlistado = true;
+			while (runMenuCalificarEnlistado) {
+				runMenuCalificarEnlistado = MenuCalificarEnlistado(sistema, scanner, estudiante, ACEscogida);
+			}
+			
+			
+			return true;
+		}
+	}
+	public static boolean MenuCalificarEnlistado(Sistema sistema, Scanner scanner, Estudiante estudiante, Actividad ACEscogida) throws SQLException {
+		System.out.println("_______________________________");
+		HashMap<String, String[]> state = ACEscogida.getState();
+		if (ACEscogida.getClass().getSimpleName().equals("Tarea") | ACEscogida.getClass().getSimpleName().equals("ActividadRecurso")) {
+			System.out.println("Esta actividad no es calificable por medio de la aplicacion");
+			return false;
+		}else {
+			if (ACEscogida.getClass().getSimpleName().equals("Quiz")) {
+				Quiz quiz = (Quiz) ACEscogida;
+				ArrayList<Pregunta> preguntas = quiz.getPreguntas();
+				for (int i = 0; i < preguntas.size(); i++) {
+					System.out.println("["+String.valueOf(i)+"] Pregunta : "+ preguntas.get(i).getID());
+				}
+				System.out.println("["+String.valueOf(preguntas.size()) + "] Aprobar");
+				System.out.println("["+String.valueOf(preguntas.size()+1)+"] Volver");
+				int opcioni = scanner.nextInt();
+				if (opcioni == preguntas.size()+1) {
+					return false;
+				}
+				else if (opcioni>= 0 & opcioni < preguntas.size()) {
+					Pregunta preguntaEscogida = preguntas.get(opcioni);
+					HashMap<Integer , HashMap<String, Object>> respuestas = quiz.getRespuestas();
+					Opcion opcion = (Opcion) respuestas.get(preguntaEscogida.getID()).get(estudiante.getLogin());
+					Object[] array = sistema.getAnswersActivity(preguntaEscogida.getID(), estudiante.getLogin());
+					System.out.println("Para la pregunta con id "+ preguntaEscogida.getID() +" el usuario "+estudiante.getLogin()+ " contesto : ");
+					System.out.println(((Opcion) array[2]).getEnunciado());
+					
+				}else if(opcioni == preguntas.size()) {
+					sistema.actualizarEstado(estudiante, quiz, state.get(estudiante.getLogin())[0], state.get(estudiante.getLogin())[1], true, true);
+				}
+				
+				else {
+					return true;
+				}
+			}else if (ACEscogida.getClass().getSimpleName().equals("Examen")) {
+				Examen examen = (Examen) ACEscogida;
+				ArrayList<Pregunta> preguntas = examen.getPreguntas();
+				for (int i = 0; i < preguntas.size(); i++) {
+					System.out.println("["+String.valueOf(i)+"] Pregunta : "+ preguntas.get(i).getID());
+				}
+				System.out.println("["+String.valueOf(preguntas.size()) + "] Aprobar");
+				System.out.println("["+String.valueOf(preguntas.size()+1)+"] Volver");
+				int opcioni = scanner.nextInt();
+				if (opcioni == preguntas.size()+1) {
+					return false;
+				}
+				else if (opcioni>= 0 & opcioni < preguntas.size()) {
+					Pregunta preguntaEscogida = preguntas.get(opcioni);
+					Object[] array = sistema.getAnswersActivity(preguntaEscogida.getID(), estudiante.getLogin());
+					System.out.println("Para la pregunta con id "+ preguntaEscogida.getID() +" el usuario "+estudiante.getLogin()+ " contesto : ");
+					System.out.println(preguntaEscogida.getEnunciado());
+					System.out.println(((String) array[0]));
+					
+				}else if(opcioni == preguntas.size()) {
+					sistema.actualizarEstado(estudiante, examen, state.get(estudiante.getLogin())[0], state.get(estudiante.getLogin())[1], true, true);
+				}
+				
+				else {
+					return true;
+				}
+			}else if (ACEscogida.getClass().getSimpleName().equals("Encuesta")) {
+				Encuesta encuesta = (Encuesta) ACEscogida;
+				ArrayList<Pregunta> preguntas = encuesta.getPreguntas();
+				for (int i = 0; i < preguntas.size(); i++) {
+					System.out.println("["+String.valueOf(i)+"] Pregunta : "+ preguntas.get(i).getID());
+				}
+				System.out.println("["+String.valueOf(preguntas.size()) + "] Aprobar");
+				System.out.println("["+String.valueOf(preguntas.size()+1)+"] Volver");
+				int opcioni = scanner.nextInt();
+				if (opcioni == preguntas.size()+1) {
+					return false;
+				}
+				else if (opcioni>= 0 & opcioni < preguntas.size()) {
+					Pregunta preguntaEscogida = preguntas.get(opcioni);
+					Object[] array = sistema.getAnswersActivity(preguntaEscogida.getID(), estudiante.getLogin());
+					System.out.println("Para la pregunta con id "+ preguntaEscogida.getID() +" el usuario "+estudiante.getLogin()+ " contesto : ");
+					System.out.println(preguntaEscogida.getEnunciado());
+					System.out.println(((String) array[0]));
+					
+				}else if(opcioni == preguntas.size()) {
+					sistema.actualizarEstado(estudiante, encuesta, state.get(estudiante.getLogin())[0], state.get(estudiante.getLogin())[1], true, true);
+				}
+				
+				else {
+					return true;
+				}
+			}
+			return true;
+		}
 	}
 }
 

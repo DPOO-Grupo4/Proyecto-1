@@ -45,4 +45,7 @@ public class LearningPath {
 	public ArrayList<Actividad> getActivities(){
 		return this.activities;
 	}
+	public ArrayList<Usuario> getEstudiantesEnlistados(){
+		return this.estudiantesEnlistados;
+	}
 }
