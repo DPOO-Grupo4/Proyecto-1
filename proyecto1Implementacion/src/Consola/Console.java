@@ -74,7 +74,6 @@ public class Console {
 		}
 		
 		return respuesta;
-		
 	}
 	public static void menuCreacionUsuario(Sistema sistema, Scanner scanner) {
 		System.out.println("\nPor favor digite los siguientes datos necesarios para la formalización de su perfil de usuario\n");
@@ -538,6 +537,10 @@ public class Console {
 		if (tipo.equals("quiz")) {
 			System.out.println("Digite la calificacion mínima necesaria para aprobar esta actividad");
 			calificacionMinima = scanner.nextInt();
+			while (calificacionMinima>4 && calificacionMinima<0)
+			{
+				calificacionMinima = scanner.nextInt();
+			}
 		}
 		
 		
@@ -566,6 +569,7 @@ public class Console {
 					System.out.println("Cuantas opciones desea añadir a su pregunta (Recuerde son maximo 4 opciones)");
 					int cantidadOpciones = scanner.nextInt();
 					while (cantidadOpciones > 4 & cantidadOpciones <1) {
+						System.out.println("Esa cantidad de opciones no es posible");
 						cantidadOpciones = scanner.nextInt();
 					}
 					ArrayList<Opcion> opciones = new ArrayList<Opcion>();
