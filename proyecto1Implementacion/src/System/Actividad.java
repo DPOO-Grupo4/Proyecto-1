@@ -1,5 +1,6 @@
 package System;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,19 +14,19 @@ public class Actividad {
 	public String descripcion;
 	public String difficulty;
 	public int duration;
-	public boolean started;
-	public String dateLimit;
+	//public boolean started;
+	public LocalDateTime dateLimit;
 	private HashMap<String, String[]> state;
 	//public HashMap<String, String> reviews;
 	
-	public Actividad(String creator, int id, boolean mandatory, String descripcion, String difficulty, int duration, boolean started, String dateLimit, HashMap<String, String[]> states) {
+	public Actividad(String creator, int id, boolean mandatory, String descripcion, String difficulty, int duration, LocalDateTime dateLimit, HashMap<String, String[]> states) {
 		this.creator = creator;
 		this.id = id;
 		this.mandatory = mandatory;
 		this.descripcion = descripcion;
 		this.difficulty = difficulty;
 		this.duration = duration;
-		this.started = started;
+		//this.started = started;
 		this.dateLimit = dateLimit;
 		this.state = states;
 	}
@@ -43,7 +44,7 @@ public class Actividad {
 	public int getDuration() {
 		return this.duration;
 	}
-	public String getDateLimit() {
+	public LocalDateTime getDateLimit() {
 		return this.dateLimit;
 	}
 	public HashMap<String, String[]> getState(){

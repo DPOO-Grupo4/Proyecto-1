@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.InputMismatchException;
 import java.util.Iterator;
 import java.util.Scanner;
 
@@ -23,7 +26,8 @@ import System.Tarea;
 import Usuarios.Estudiante;
 import Usuarios.Profesor;
 import Usuarios.Usuario;
-
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 public class Console {
 	
 	public static void main(String[] args) {
@@ -83,9 +87,21 @@ public class Console {
 		System.out.println("\n Contraseña: \n");
 		String password = scanner.next();
 		System.out.println("\n Correo: \n");
+		Pattern pattern = Pattern.compile("[a-zA-Z0-9._]+@[a-zA-Z0-9.-]+\\.[a-z]{2,}");
 		String correo = scanner.next();
+		Matcher matcher = pattern.matcher(correo);
+		while (!matcher.find()) {
+			System.out.println("La dirección de correo electronico no es correcta");
+			correo=scanner.next();
+			matcher = pattern.matcher(correo);
+		}
 		System.out.println("\n ¿Usted es un estudiante o un profesor?");
 		String tipo = scanner.next();
+		while (!tipo.equals("estudiante") && !tipo.equals("profesor")) {
+			System.out.println("Las unicas opciones son 'estudiante' y 'profesor'");
+			tipo = scanner.next();
+		}
+		tipo.toLowerCase();
 		
 		try {
 			sistema.crearUsuario(login, password, correo, tipo, true );
@@ -117,14 +133,22 @@ public class Console {
 		}
 	}
 	public static void menuAplicacion(Sistema sistema, Scanner scanner) throws SQLException {
-		if (sistema.getSession().getClass().getSimpleName().equals("Estudiante")) {
-			boolean runSession = true;
-			while (runSession) {
-				runSession = menuAplicacionEstudiante(sistema, scanner);
+		try {
+			if (sistema.getSession().getClass().getSimpleName().equals("Estudiante")) {
+				boolean runSession = true;
+				while (runSession) {
+					runSession = menuAplicacionEstudiante(sistema, scanner);
+				}
+			}else {
+				menuAplicacionProfesor(sistema,scanner); 
 			}
-		}else {
-			menuAplicacionProfesor(sistema,scanner); 
+		}catch (NullPointerException e)
+		{
+			System.out.println("Hubo un error al iniciar sesión");
+		}catch (SQLException e) {
+			throw e;
 		}
+		
 	
 	}
 	public static boolean menuAplicacionEstudiante(Sistema sistema, Scanner scanner) throws SQLException {
@@ -155,6 +179,9 @@ public class Console {
 			System.out.println("["+learningPaths.size()+"] Volver");
 			System.out.println("De la lista de Learning Paths en el sistema ¿ Cúal desea inscribir ?");
 			int opcioni = scanner.nextInt();
+			if (opcioni == learningPaths.size()) {
+				return false;
+			}
 			sistema.inscribirLP(learningPaths.get(titulosLPs.get(opcioni)),(Estudiante) sistema.getSession());
 			return true;
 		}
@@ -231,18 +258,20 @@ public class Console {
 		}else {
 			System.out.println("[0] Iniciar actividad ");
 		}
-		System.out.println("[1] salir");
+		System.out.println("[1] Publicar reseña sobre esta actividad");
+		System.out.println("[2] Calificar actividad (0-5)");
+		System.out.println("[3] salir");
 		int opcion3 = scanner.nextInt();
-		while (opcion3!=0 & opcion3!=1) {
+		while (opcion3<0 & opcion3>3) {
 			opcion3 = scanner.nextInt();
 		}
-		
+		HashMap<String, String[]> stateBORRAR = actividadEscogida.getState();
 		if (actividadEscogida.getClass().getSimpleName().equals("Quiz") & opcion3==0 & !yaAprobada) {
 			
 			HashMap<String, String[]> state = actividadEscogida.getState();
 			if (!state.containsKey(sistema.getSession().getLogin())) {
 				state.put(sistema.getSession().getLogin(), new String[3]);
-				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString() , "", false, false);
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDateTime.now().toString() , "", false, false);
 			}
 			Quiz actividad = (Quiz) actividadEscogida;
 			ArrayList<Pregunta> preguntas = actividad.getPreguntas();
@@ -259,16 +288,31 @@ public class Console {
 				}
 				System.out.println("Seleccione la opcion que considere correcta :");
 				int respuestaUsuario = scanner.nextInt() -1;
+				while (respuestaUsuario<0 || respuestaUsuario>opciones.size()-1)
+				{
+					System.out.println("La opción que selecciono no existe");
+					System.out.println("Por favor digite una opción que sí sea valida");
+					respuestaUsuario = scanner.nextInt()-1;
+				}
 				//sistema.insertarAnswersActiyity();
 				sistema.actualizarRespuestaUsuario(sistema.getSession(), pregunta.getID(), String.valueOf(opciones.get(respuestaUsuario).getID()), "NULL", false);
 				if (opciones.get(respuestaUsuario).getCorrect()) {
 					respuestasBuenas+=1;
+					System.out.println("-----------------------------------------------");
+					System.out.println("¡Wow! Tu respuesta fue correcta porque ...");
+					System.out.println(opciones.get(respuestaUsuario).getExplicacion());
+					System.out.println("-----------------------------------------------");
+				}else {
+					System.out.println("-----------------------------------------------");
+					System.out.println("¡oops! Tu respuesta fue incorrecta porque ...");
+					System.out.println(opciones.get(respuestaUsuario).getExplicacion());
+					System.out.println("-----------------------------------------------");
 				}
 				
 			}
 			if (respuestasBuenas >= actividad.getCalificacionMinima()) {
 				System.out.println("Ha aprobado la actividad");
-				sistema.actualizarEstado(sistema.getSession(), actividadEscogida,state.get(sistema.getSession().getLogin())[0],LocalDate.now().toString(), true, true );
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida,state.get(sistema.getSession().getLogin())[0],LocalDateTime.now().toString(), true, true );
 				
 			}
 			return true;
@@ -276,7 +320,7 @@ public class Console {
 			HashMap<String, String[]> state = actividadEscogida.getState();
 			if (!state.containsKey(sistema.getSession().getLogin())) {
 				state.put(sistema.getSession().getLogin(), new String[3]);
-				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString() , "", false, false);
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDateTime.now().toString() , "", false, false);
 			}
 			Examen actividad = (Examen) actividadEscogida;
 			ArrayList<Pregunta> preguntas = actividad.getPreguntas();
@@ -294,13 +338,13 @@ public class Console {
 				sistema.actualizarRespuestaUsuario(sistema.getSession(), pregunta.getID(), "NULL", respuestaUsuario, false);
 				System.out.println("Su respuesta fue enviada con exito");
 			}
-			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0], LocalDate.now().toString(), false, false);
+			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0], LocalDateTime.now().toString(), false, false);
 			return true;
 		}else if (actividadEscogida.getClass().getSimpleName().equals("Encuesta") & opcion3==0 & !yaAprobada) {
 			HashMap<String, String[]> state = actividadEscogida.getState();
 			if (!state.containsKey(sistema.getSession().getLogin())) {
 				state.put(sistema.getSession().getLogin(), new String[3]);
-				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString() , "", false, false);
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDateTime.now().toString() , "", false, false);
 			}
 			Encuesta actividad = (Encuesta) actividadEscogida;
 			ArrayList<Pregunta> preguntas = actividad.getPreguntas();
@@ -318,16 +362,16 @@ public class Console {
 				sistema.actualizarRespuestaUsuario(sistema.getSession(), pregunta.getID(), "NULL", respuestaUsuario, false);
 				
 			}
-			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0], LocalDate.now().toString(), true, false);
+			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0], LocalDateTime.now().toString(), true, false);
 			return true;
 		}else if (actividadEscogida.getClass().getSimpleName().equals("ActividadRecurso") & opcion3==0 & !yaAprobada) {
 			//sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString(),"" ,false, false);
 			HashMap<String, String[]> state = actividadEscogida.getState();
 			if (!state.containsKey(sistema.getSession().getLogin())) {
 				state.put(sistema.getSession().getLogin(), new String[3]);
-				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString() , "", false, false);
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDateTime.now().toString() , "", false, false);
 			}
-			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString(),"" ,false, false);
+			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDateTime.now().toString(),"" ,false, false);
 			ActividadRecurso actividadRecurso = (ActividadRecurso) actividadEscogida;
 			System.out.println("HIPERVINCULO : "+ actividadRecurso.getDocumentPath());
 			System.out.println("[0] volver");
@@ -335,7 +379,7 @@ public class Console {
 			while (opcioni != 0) {
 				opcioni = scanner.nextInt();
 			}if (opcioni == 0) {
-				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0],LocalDate.now().toString() ,false, false);
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0],LocalDateTime.now().toString() ,false, false);
 				return false;
 			}
 			return true;
@@ -344,9 +388,9 @@ public class Console {
 			HashMap<String, String[]> state = actividadEscogida.getState();
 			if (!state.containsKey(sistema.getSession().getLogin())) {
 				state.put(sistema.getSession().getLogin(), new String[3]);
-				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString() , "", false, false);
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDateTime.now().toString() , "", false, false);
 			}
-			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDate.now().toString(),"" ,false, false);
+			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, LocalDateTime.now().toString(),"" ,false, false);
 			Tarea tarea = (Tarea) actividadEscogida;
 			System.out.println("Comentario : " + tarea.getComentario()); //Se supone que el comentario les dice donde enviar la tarea que hicieron
 			System.out.println("[0] completar ");
@@ -354,9 +398,17 @@ public class Console {
 			while (opcioni != 0) {
 				opcioni = scanner.nextInt();
 			}if (opcioni == 0) {
-				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0],LocalDate.now().toString() ,false, false);
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0],LocalDateTime.now().toString() ,false, false);
 				return false;
 			}
+			return true;
+		}
+		else if (opcion3 == 1) {
+			System.out.println("Por favor digite a continuación la reseña que desea publicar");
+			scanner.nextLine();
+			String reseña = scanner.nextLine();
+			sistema.insertarReseñas(actividadEscogida.getID(), sistema.getSession().getLogin(), reseña);
+			System.out.println("______________________________________________");
 			return true;
 		}
 
@@ -379,7 +431,8 @@ public class Console {
 	        //System.out.println("[5] Publicar reseña");
 	        System.out.println("[4] Ver Actividades Creadas");
 	        System.out.println("[5] Ver Learning Paths Creados");
-	        System.out.println("[6] Cerrar sesión");
+	        System.out.println("[6] Ver reseñas");
+	        System.out.println("[7] Cerrar sesión");
 	        System.out.print("¿Qué desea hacer? ");
 
 	        int opcion = scanner.nextInt();
@@ -389,7 +442,9 @@ public class Console {
 		        case 1:
 	                
 	                System.out.print("Ingrese el título del Learning Path: ");
-	                String tituloLP = scanner.next();
+	                scanner.nextLine();
+	                String tituloLP = scanner.nextLine();
+	                scanner.nextLine();
 	                if (sistema.getLPs().containsKey(tituloLP)){
 	                	System.out.println("Ese nombre ya fue usado para otro learning path");
 	                	break;
@@ -409,10 +464,12 @@ public class Console {
 	                //int calificacion = scanner.nextInt();
 	                //scanner.nextLine(); 
 	
-	                String fechaCreacion = LocalDate.now().toString(); 
+	                LocalDateTime fechaCreacion = LocalDateTime.now(); 
 	                LearningPath nuevoLP = sistema.crearLearningPath(profesor.getLogin(), tituloLP, descripcionGeneral, dificultad, duracion, 0, fechaCreacion, fechaCreacion, true);
 	                profesor.añadirLearningPath(nuevoLP);
-	                
+	                HashMap<String, LearningPath> LPsCreados = sistema.getLPs();
+	                LPsCreados.put(nuevoLP.getTitulo(), nuevoLP);
+	                sistema.setLPs(LPsCreados);
 	                System.out.println("Learning Path creado con éxito.");
 	                break;
 	                
@@ -475,8 +532,29 @@ public class Console {
 	                    System.out.println("----------------------------");
 	                }
 	                break;
-	                
 	            case 6:
+	            	System.out.println("__________________________________________");
+		        	System.out.println("Que Learning Path desea consultar ... ");
+		        	ArrayList<LearningPath> LPsUsuario =  ((Profesor) sistema.getSession()).getLPs();
+		        	for (int i = 1 ; i <= LPsUsuario.size(); i++) {
+		        		System.out.println("["+String.valueOf(i)+"]"+LPsUsuario.get(i-1).getTitulo());
+		        	}
+		        	System.out.println("["+String.valueOf(LPsUsuario.size()+1)+"] Volver");
+		        	System.out.println("__________________________________________");
+		        	int opcionj = scanner.nextInt();
+		        	while (opcionj<1 & opcion >LPsUsuario.size()) {
+		        		opcionj = scanner.nextInt();
+		        		
+		        		
+		        	}
+		        	if (opcionj  == LPsUsuario.size()+1) {
+		        		break;
+		        	}
+		        	menuVerReseñas(sistema, scanner, LPsUsuario.get(opcionj-1));
+		        	
+		        	
+		            break;
+	            case 7:
 	                
 	                System.out.println("Cerrando sesión...");
 	                return false;                 
@@ -492,22 +570,39 @@ public class Console {
 		System.out.println("Bienvenido al menu de edicion ");
 		System.out.println("Ahora mismo esta editando el Learning Path : "+ LP.getTitulo());
 		System.out.println("[0] Añadir actividad");
-		//System.out.println("[1] Remover alguna actividad");
-		System.out.println("[1] Salir");
+		System.out.println("[1] Remover alguna actividad");
+		System.out.println("[2] Modificar una actividad existente");
+		System.out.println("[3] Salir");
 		int opcion = scanner.nextInt();
-		while (opcion != 0 & opcion != 1 & opcion != 2) {
+		while (opcion <0 && opcion >3) {
 			opcion = scanner.nextInt();
 		}
 		
-		if (opcion == 1) {
+		if (opcion == 3) {
 			return false;
 		}else if (opcion == 0) {
 			boolean runMenuCA = true;
 			while (runMenuCA) {
 				runMenuCA = menuCreacionActividad(sistema, scanner, LP);
+				
+			}
+			return true;
+		}else if (opcion == 1) {
+			boolean runMenuBA = true;
+			while (runMenuBA) {
+				runMenuBA = runMenuBorrarActividad(sistema, scanner, LP);
+				LP = sistema.getLPs().get(LP.getTitulo());
+				
+			}
+			return true;
+		}else if (opcion == 2) {
+			boolean runMenuMA = true;
+			while (runMenuMA) {
+				runMenuMA = runMenuModificarActividadS(sistema, scanner, LP);
 			}
 			return true;
 		}else {
+		
 			return true;
 		}
 	}
@@ -524,8 +619,20 @@ public class Console {
 		boolean mandatory = scanner.nextBoolean();
 		System.out.println("DURACION (en minutos) : ");
 		int duration = scanner.nextInt();
-		System.out.println("FECHA LÍMITE : ");
-		String dateLimit = scanner.next();
+		System.out.println("FECHA LÍMITE : (Formato : yyyy-MM-dd HH:mm:ss");
+		scanner.nextLine();
+		String dateLimitI = scanner.nextLine();
+		scanner.nextLine();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		LocalDateTime dateLimit = LocalDateTime.parse(dateLimitI, formatter);
+		while (dateLimit.isBefore(LocalDateTime.now())) {
+			System.out.println("La fecha límite no puede haber pasado ya");
+			System.out.println("FECHA LÍMITE : (Formato : yyyy-MM-dd HH:mm:ss");
+			dateLimitI = scanner.nextLine();
+			scanner.nextLine();
+			formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			dateLimit = LocalDateTime.parse(dateLimitI, formatter);
+		}
 		String documentPath = "";
 		int calificacionMinima = 0;
 		System.out.println("TIPO (quiz, examen, encuesta, tarea, recurso)");
@@ -537,20 +644,26 @@ public class Console {
 		if (tipo.equals("quiz")) {
 			System.out.println("Digite la calificacion mínima necesaria para aprobar esta actividad");
 			calificacionMinima = scanner.nextInt();
-			while (calificacionMinima>4 && calificacionMinima<0)
-			{
-				calificacionMinima = scanner.nextInt();
-			}
+			
+			//while (calificacionMinima>4 || calificacionMinima<0)
+			//{
+			//	calificacionMinima = scanner.nextInt();
+			//}
 		}
 		
 		
 		if (tipo.equals("quiz")) {
 			
-			Quiz newActividad = (Quiz) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, false, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true,"");
+			Quiz newActividad = (Quiz) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true,"");
 			
 			System.out.println("Usted eligio una actividad de tipo quiz");
 			System.out.println("Por ello a continuación digite el numero de preguntas que quiere que su actividad contenga");
 			int cantidadPreguntas = scanner.nextInt();
+			while  (cantidadPreguntas < calificacionMinima) {
+				System.out.println("La cantidad de preguntas es menor a la calificación mínima para aprobar la actividad ");
+				System.out.println("Por ello a continuación digite el numero de preguntas que quiere que su actividad contenga");
+				cantidadPreguntas = scanner.nextInt();
+			}
 			//ArrayList<Pregunta> preguntas = new ArrayList<Pregunta>();
 			newActividad.setPreguntas(new ArrayList<Pregunta>());
 			ArrayList<Pregunta> preguntas = newActividad.getPreguntas();
@@ -559,7 +672,9 @@ public class Console {
 				System.out.println("Pregunta ("+String.valueOf(i)+")" );
 				System.out.println("-------------------");
 				System.out.println("Por favor digite el enunciado de su pregunta : ");
-				scanner.nextLine();
+				if (i==1) {
+					scanner.nextLine();
+				}
 				String enunciado = scanner.nextLine();
 				scanner.nextLine();
 				int idPregunta = sistema.insertarPreguntaQuestionsAsToQuestionaries(newActividad.getID());
@@ -568,13 +683,18 @@ public class Console {
 					sistema.insertarQuestions(idPregunta, "opcionMultiple", enunciado);
 					System.out.println("Cuantas opciones desea añadir a su pregunta (Recuerde son maximo 4 opciones)");
 					int cantidadOpciones = scanner.nextInt();
-					while (cantidadOpciones > 4 & cantidadOpciones <1) {
-						System.out.println("Esa cantidad de opciones no es posible");
+					while (cantidadOpciones > 4 || cantidadOpciones <2) {
+						System.out.println("Esa cantidad de opciones no es posible o no es suficiente");
 						cantidadOpciones = scanner.nextInt();
 					}
 					ArrayList<Opcion> opciones = new ArrayList<Opcion>();
+					boolean yaCorrecto = false;
 					for (int j = 1 ; j<=cantidadOpciones; j ++) {
 						System.out.println("OPCION ("+String.valueOf(j)+")");
+						if (j==cantidadOpciones && !yaCorrecto) {
+							System.out.printf("Esta es la ultima opcion, tiene que ser correcta pues ninguna de las anteriores lo es");
+							
+						}
 						System.out.println("Enunciado de la OPCION : ");
 						if (j== 1) {
 							scanner.nextLine();
@@ -583,6 +703,29 @@ public class Console {
 						scanner.nextLine();
 						System.out.println("¿La opcion es correcta? Digite true o false (true: Sí, false : No)");
 						boolean correct = scanner.nextBoolean();
+						while (!correct && j==cantidadOpciones &&!yaCorrecto)
+						{
+							System.out.println("La opcion tiene que ser correcta");
+							System.out.println("OPCION ("+String.valueOf(j)+")");
+							System.out.println("Enunciado de la OPCION : ");
+							enunciadoOpcion = scanner.nextLine();
+							scanner.nextLine();
+							System.out.println("¿La opcion es correcta? Digite true o false (true: Sí, false : No)");
+							correct = scanner.nextBoolean();
+						}
+						while (correct && yaCorrecto)
+						{
+							System.out.println("Ya puso una opción correcta");
+							System.out.println("OPCION ("+String.valueOf(j)+")");
+							System.out.println("Enunciado de la OPCION : ");
+							enunciadoOpcion = scanner.nextLine();
+							scanner.nextLine();
+							System.out.println("¿La opcion es correcta? Digite true o false (true: Sí, false : No)");
+							correct = scanner.nextBoolean();
+						}
+						if (correct && !yaCorrecto) {
+							yaCorrecto = true;
+						}
 						System.out.println("¿Por qué la opcion es correcta o incorrecta?");
 						scanner.nextLine();
 						String explicacion = scanner.nextLine();
@@ -593,17 +736,24 @@ public class Console {
 					}
 					PreguntaOpcionMultiple newPregunta = sistema.crearPreguntaOpcionMultiple(idPregunta, enunciado);
 					preguntas.add(newPregunta);
+					
 				}
-				
+				//AAAAAAAACB
 			}
 			newActividad.setPreguntas(preguntas);
 			sistema.insertarCreatedActivities(newActividad.getID(), LP.getTitulo());
 			ArrayList<Actividad> actividades = ((Profesor) sistema.getSession()).getActividadesCreadas();
 			actividades.add(newActividad);
 			((Profesor) sistema.getSession()).setActividadesCreadas(actividades);
+			ArrayList<Actividad> activitiesLP = LP.getActivities();
+			activitiesLP.add(newActividad);
+			LP.setActivities(activitiesLP);
+			HashMap<String, LearningPath> LPsCreados = sistema.getLPs();
+			LPsCreados.put(LP.getTitulo(), LP);
+			
 		}
 		else if (tipo.equals("examen")) {
-			Examen newActividad = (Examen) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, false, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true, "");
+			Examen newActividad = (Examen) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true, "");
 		
 			System.out.println("Usted eligio una actividad de tipo examen");
 			System.out.println("Por ello a continuación digite el numero de preguntas que quiere que su actividad contenga");
@@ -631,9 +781,14 @@ public class Console {
 			ArrayList<Actividad> actividades = ((Profesor) sistema.getSession()).getActividadesCreadas();
 			actividades.add(newActividad);
 			((Profesor) sistema.getSession()).setActividadesCreadas(actividades);
+			ArrayList<Actividad> activitiesLP = LP.getActivities();
+			activitiesLP.add(newActividad);
+			LP.setActivities(activitiesLP);
+			HashMap<String, LearningPath> LPsCreados = sistema.getLPs();
+			LPsCreados.put(LP.getTitulo(), LP);
 		}
 		else if (tipo.equals("encuesta")) {
-			Encuesta newActividad = (Encuesta) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, false, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true, "");
+			Encuesta newActividad = (Encuesta) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true, "");
 			
 			System.out.println("Usted eligio una actividad de tipo encuesta");
 			System.out.println("Por ello a continuación digite el numero de preguntas que quiere que su actividad contenga");
@@ -661,27 +816,42 @@ public class Console {
 			ArrayList<Actividad> actividades = ((Profesor) sistema.getSession()).getActividadesCreadas();
 			actividades.add(newActividad);
 			((Profesor) sistema.getSession()).setActividadesCreadas(actividades);
+			ArrayList<Actividad> activitiesLP = LP.getActivities();
+			activitiesLP.add(newActividad);
+			LP.setActivities(activitiesLP);
+			HashMap<String, LearningPath> LPsCreados = sistema.getLPs();
+			LPsCreados.put(LP.getTitulo(), LP);
 		}
 		else if (tipo.equals("recurso")) {
 			System.out.println("Usted eligio una actividad de tipo recurso");
 			//System.out.println("Por favor digite a continuación el hipervinculo que desea que los estudiantes visualicen");
 			//documentPath = scanner.next();
-			ActividadRecurso newActividad = (ActividadRecurso) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, false, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true, "");
+			ActividadRecurso newActividad = (ActividadRecurso) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true, "");
 			sistema.insertarCreatedActivities(newActividad.getID(), LP.getTitulo());
 			ArrayList<Actividad> actividades = ((Profesor) sistema.getSession()).getActividadesCreadas();
 			actividades.add(newActividad);
 			((Profesor) sistema.getSession()).setActividadesCreadas(actividades);
+			ArrayList<Actividad> activitiesLP = LP.getActivities();
+			activitiesLP.add(newActividad);
+			LP.setActivities(activitiesLP);
+			HashMap<String, LearningPath> LPsCreados = sistema.getLPs();
+			LPsCreados.put(LP.getTitulo(), LP);
 		}else if (tipo.equals("tarea")) {
 			System.out.println("Usted eligio una actividad de tipo tarea");
 			System.out.println("Por favor digite a continuación el comentario que desea añadir a la tarea : ");
 			scanner.nextLine();
 			String comment = scanner.nextLine();
 			scanner.nextLine();
-			Tarea newActividad = (Tarea) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, false, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true, comment);
+			Tarea newActividad = (Tarea) sistema.crearActividad(sistema.getSession().getLogin(), 0, mandatory, descripcion, dificultad, duration, dateLimit, tipo, documentPath, calificacionMinima, new HashMap<String, String[]>(), true, comment);
 			sistema.insertarCreatedActivities(newActividad.getID(), LP.getTitulo());
 			ArrayList<Actividad> actividades = ((Profesor) sistema.getSession()).getActividadesCreadas();
 			actividades.add(newActividad);
 			((Profesor) sistema.getSession()).setActividadesCreadas(actividades);
+			ArrayList<Actividad> activitiesLP = LP.getActivities();
+			activitiesLP.add(newActividad);
+			LP.setActivities(activitiesLP);
+			HashMap<String, LearningPath> LPsCreados = sistema.getLPs();
+			LPsCreados.put(LP.getTitulo(), LP);
 		}
 		
 		System.out.println("______________________________________");
@@ -853,6 +1023,106 @@ public class Console {
 			}
 			return true;
 		}
+	}
+	
+	public static boolean runMenuBorrarActividad(Sistema sistema, Scanner scanner, LearningPath LP) {
+		
+		System.out.println("____________________________________");
+		System.out.println("ACTIVIDADES DEL LEARNING PATH ");
+		ArrayList<Actividad> activities = LP.getActivities();
+		for (int i = 0; i < activities.size();i++) {
+			System.out.println("["+String.valueOf(i)+"] " + activities.get(i).getID());
+		}
+		System.out.println("["+String.valueOf(activities.size())+"] Volver");
+		System.out.println("____________________________________");
+		System.out.println("Seleccione que actividad de "+LP.getTitulo()+" desea eliminar : ");
+		try 
+		{
+			int opcioni = scanner.nextInt();
+			if (opcioni == activities.size()) {
+				return false;
+			}else if  (opcioni>=0 & opcioni<activities.size()){
+				Actividad ACEscogida = activities.get(opcioni);
+				try {
+					sistema.borrarACEscogida(ACEscogida, LP);
+				} catch (SQLException e) {
+					System.out.println("Hubo algun error borrando la actividad que escogio");
+					
+				}
+				return true;
+			}else {
+				
+				return true;
+			}
+		} catch (InputMismatchException e)
+		{
+			
+			System.out.println("Digito mal el input");
+			scanner.nextLine();
+			return true;
+		}
+		
+		
+	}
+	public static void menuVerReseñas(Sistema sistema, Scanner scanner, LearningPath LP) {
+		System.out.println("____________________________________");
+		System.out.println("ACTIVIDADES DEL LEARNING PATH ");
+		ArrayList<Actividad> activities = LP.getActivities();
+		for (int i = 0; i < activities.size();i++) {
+			System.out.println("["+String.valueOf(i)+"] " + activities.get(i).getID());
+		}
+		System.out.println("["+String.valueOf(activities.size())+"] Volver");
+		System.out.println("____________________________________");
+		System.out.println("Seleccione para que actividad de "+LP.getTitulo()+" desea ver las reseñas: ");
+		int opcioni = scanner.nextInt();
+		Actividad ACEscogida = activities.get(opcioni);
+		try {
+			ArrayList<String> reseñas = sistema.getReseñasActividad(ACEscogida.getID());
+			for (String reseña : reseñas) {
+				System.out.println("---------------------------");
+				System.out.println(reseña);
+				System.out.println("---------------------------");
+			}
+		} catch (SQLException e) {
+			System.out.println("Hubo algún error recuperando lass reseñas la actividad");
+		}
+	}
+	
+	public static boolean runMenuModificarActividadS(Sistema sistema, Scanner scanner, LearningPath LP) {
+		System.out.println("________________________________________");
+		System.out.println("Bienvenido al menu donde podrá modificar la actividad de su escogencia");
+		
+		System.out.println("ACTIVIDADES DEL LEARNING PATH ");
+		ArrayList<Actividad> activities = LP.getActivities();
+		for (int i = 0; i < activities.size();i++) {
+			System.out.println("["+String.valueOf(i)+"] " + activities.get(i).getID());
+		}
+		System.out.println("["+String.valueOf(activities.size())+"] Volver");
+		System.out.println("________________________________________");
+		System.out.println("Seleccione que actividad de "+LP.getTitulo()+" desea modificar: ");
+		int opcioni = scanner.nextInt();
+		if (opcioni == activities.size()) {
+			return false;
+		}
+		Actividad ACEscogida = activities.get(opcioni);
+		boolean result = runMenuModificarActividad1(sistema, scanner, ACEscogida);
+		System.out.println("________________________________________");
+		
+		return true;
+	}
+	public static boolean runMenuModificarActividad1(Sistema sistema, Scanner scanner, Actividad ACEscogida) {
+		System.out.println("________________________________________");
+		System.out.println("[0] Volver");
+		System.out.println("[1] Modificar descripción");
+		System.out.println("[2] Modificar obligatoriedad");
+		System.out.println("[3] Modificar dificultad");
+		System.out.println("[4] Modificar duración (en minutos)");
+		System.out.println("[5] Modificar fecha límite");
+		//System.out.println("[6] Reiniciar estados actividad");
+		System.out.println("Por favor digite el numero de la opción que describe lo que usted quiere hacer");
+		int opcion = scanner.nextInt();
+		System.out.println("________________________________________");
+		return true;
 	}
 }
 

@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -98,14 +100,21 @@ public class Sistema {
 		}
 	}
 	
-	public LearningPath crearLearningPath(String creador, String titulo, String descripcionGeneral, String difficulty, int duration, int rating, String fechaCreacion, String fechaModificacion, boolean nuevo) throws SQLException {
+	public LearningPath crearLearningPath(String creador, String titulo, String descripcionGeneral, String difficulty, int duration, int rating, LocalDateTime fechaCreacion, LocalDateTime fechaModificacion, boolean nuevo) throws SQLException {
 		LearningPath newLP = new LearningPath(creador, titulo, descripcionGeneral, difficulty, duration, rating, fechaCreacion, fechaModificacion, this);
 		if (nuevo) {
 			Statement statement = this.connection.createStatement();
 			//statement.executeUpdate("INSERT INTO createdLearningPaths (nameLP, login) VALUES ('"+titulo+"','"+creador+"')");
+			String creationDate = LocalDate.now().toString();
+			String creationTime = LocalTime.now().toString();
+			String modificationDate = LocalDate.now().toString();
+			String modificationTime = LocalTime.now().toString();
+			String cd = creationDate + " " + creationTime;
+			String md = modificationDate + " " + modificationTime;
 			statement.executeUpdate("INSERT INTO learningPaths (nameLP,creator, description, difficulty, duration, rating, creationDate, moddate) VALUES ('"+titulo+"','"+creador+"','"+descripcionGeneral+"','"+difficulty+"',"+String.valueOf(duration)+","
-					+ "0,'"+LocalDate.now().toString()+"','"+LocalDate.now().toString()+"')");
+					+ "0,'"+cd+"','"+md+"')");
 		}
+		
 		return newLP;
 	}
 	
@@ -145,10 +154,10 @@ public class Sistema {
 					String difficulty = LP.getString("difficulty");
 					int duration = LP.getInt("duration");
 					int rating = LP.getInt("rating");
-					String creationdate = LP.getString("creationdate");
-					String moddate = LP.getString("moddate");
-						
-					
+					//String creationdate = LP.getString("creationdate");
+					//String moddate = LP.getString("moddate");
+					LocalDateTime creationdate = LP.getTimestamp("creationdate").toLocalDateTime();
+					LocalDateTime moddate =  LP.getTimestamp("moddate").toLocalDateTime();
 				
 					if (!this.learningPathsCreados.containsKey(nameLP)) {
 						this.learningPathsCreados.put(nameLP, null);
@@ -186,14 +195,14 @@ public class Sistema {
 				String description = resultset.getString("description");
 				String difficulty = resultset.getString("difficulty");
 				int duration = resultset.getInt("duration");
-				boolean started = resultset.getBoolean("started");
-				String datelimit = resultset.getString("datelimit");
+				//boolean started = resultset.getBoolean("started");
+				LocalDateTime datelimit = resultset.getTimestamp("datelimit").toLocalDateTime();
 				int calificacionMinima = resultset.getInt("calificacionMinima");
 				String type = resultset.getString("type");
 				String documentPath = resultset.getString("documentPath");
 				String comment = resultset.getString("comment");
 				//Actividad actividad = new Actividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, getEstadosActividad(id));
-				Actividad actividad = crearActividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, type, documentPath,calificacionMinima, getEstadosActividad(id), false, comment);
+				Actividad actividad = crearActividad(creator, id, mandatory, description, difficulty, duration, datelimit, type, documentPath,calificacionMinima, getEstadosActividad(id), false, comment);
 				if (!this.actividades.containsKey(id)) {
 					this.actividades.put(id, actividad);
 				}
@@ -220,9 +229,11 @@ public class Sistema {
 				String difficulty = resultset.getString("difficulty");
 				int duration = resultset.getInt("duration");
 				int rating = resultset.getInt("rating");
-				String creationdate = resultset.getString("creationdate");
-				String moddate = resultset.getString("moddate");
-						
+				//String creationdate = resultset.getString("creationdate");
+				//String moddate = resultset.getString("moddate");
+				LocalDateTime creationdate = resultset.getTimestamp("creationdate").toLocalDateTime();
+				LocalDateTime moddate =  resultset.getTimestamp("moddate").toLocalDateTime();
+				
 				LearningPath newLP = crearLearningPath(creator, nameLP, description, difficulty, duration, rating, creationdate, moddate, false);
 				if (!this.learningPathsCreados.containsKey(nameLP)) {
 					this.learningPathsCreados.put(nameLP, newLP);
@@ -256,12 +267,20 @@ public class Sistema {
 		}
 	}
 	
-	public Actividad crearActividad(String creator, int id, boolean mandatory, String description, String difficulty, int duration, boolean started, String datelimit, String type, String documentPath, int calificacionMinima,HashMap<String,String[]> states, boolean nuevo, String comment) throws SQLException {
+	public Actividad crearActividad(String creator, int id, boolean mandatory, String description, String difficulty, int duration, LocalDateTime datelimit, String type, String documentPath, int calificacionMinima,HashMap<String,String[]> states, boolean nuevo, String comment) throws SQLException {
 		Statement globalStatement = this.connection.createStatement();
+		LocalDate fecha = datelimit.toLocalDate();
+		LocalTime hora = datelimit.toLocalTime();
+		String horaFormateada = hora.toString();
+		if (horaFormateada.length()<8) {
+			horaFormateada= horaFormateada + ":00";
+		}
 		if (type.equals("recurso")) {
 			if (nuevo) {
-				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
+				
+				
+				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, datelimit, type, documentpath, comment, calificacionminima)"
+						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+",'"+fecha.toString()+" "+horaFormateada+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
 				StringBuilder notin = new StringBuilder();
 				notin.append("(");
 				int conteo = 0;
@@ -278,7 +297,7 @@ public class Sistema {
 					id = resultset.getInt("id");
 				}
 			}
-			ActividadRecurso actividadRecurso =  new ActividadRecurso(creator, id, mandatory, description, difficulty, duration, started, datelimit,states, documentPath);
+			ActividadRecurso actividadRecurso =  new ActividadRecurso(creator, id, mandatory, description, difficulty, duration, datelimit,states, documentPath);
 			if (!this.actividades.containsKey(id)) {
 				this.actividades.put(id, actividadRecurso);
 			}
@@ -287,8 +306,8 @@ public class Sistema {
 			
 		}else if (type.equals("quiz")) {
 			if (nuevo) {
-				globalStatement.executeUpdate("INSERT INTO activities (creator,mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
+				globalStatement.executeUpdate("INSERT INTO activities (creator,mandatory, description, difficulty, duration, datelimit, type, documentpath, comment, calificacionminima)"
+						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+",'"+fecha.toString()+" "+horaFormateada+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
 				StringBuilder notin = new StringBuilder();
 				notin.append("(");
 				int conteo = 0;
@@ -310,7 +329,7 @@ public class Sistema {
 			for (Pregunta p : preguntas) {
 				IDsPreguntas.add(p.idPregunta);
 			}
-			Quiz quiz = new Quiz(creator, id, mandatory, description,difficulty, duration, started, datelimit, states, preguntas,  calificacionMinima, getRespuestasActividad(IDsPreguntas));
+			Quiz quiz = new Quiz(creator, id, mandatory, description,difficulty, duration,  datelimit, states, preguntas,  calificacionMinima, getRespuestasActividad(IDsPreguntas));
 			if (!this.actividades.containsKey(id)) {
 				this.actividades.put(id, quiz);
 			}
@@ -320,8 +339,8 @@ public class Sistema {
 			
 		}else if (type.equals("examen")) {
 			if (nuevo) {
-				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
+				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, datelimit, type, documentpath, comment, calificacionminima)"
+						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+",'"+fecha.toString()+" "+horaFormateada+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
 				StringBuilder notin = new StringBuilder();
 				notin.append("(");
 				int conteo = 0;
@@ -344,7 +363,7 @@ public class Sistema {
 			for (Pregunta p : preguntas) {
 				IDsPreguntas.add(p.idPregunta);
 			}
-			Examen examen = new Examen(creator, id, mandatory, description,difficulty, duration, started, datelimit, states, preguntas, getRespuestasActividad(IDsPreguntas));
+			Examen examen = new Examen(creator, id, mandatory, description,difficulty, duration,datelimit, states, preguntas, getRespuestasActividad(IDsPreguntas));
 			if (!this.actividades.containsKey(id)) {
 				this.actividades.put(id, examen);
 			}
@@ -354,8 +373,8 @@ public class Sistema {
 		
 		}else if (type.equals("encuesta")) {
 			if (nuevo) {
-				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
+				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, datelimit, type, documentpath, comment, calificacionminima)"
+						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+",'"+fecha.toString()+" "+horaFormateada+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
 				
 				StringBuilder notin = new StringBuilder();
 				notin.append("(");
@@ -379,7 +398,7 @@ public class Sistema {
 			for (Pregunta p : preguntas) {
 				IDsPreguntas.add(p.idPregunta);
 			}
-			Encuesta encuesta = new Encuesta(creator, id, mandatory, description,difficulty, duration, started, datelimit, states, preguntas, getRespuestasActividad(IDsPreguntas));	
+			Encuesta encuesta = new Encuesta(creator, id, mandatory, description,difficulty, duration, datelimit, states, preguntas, getRespuestasActividad(IDsPreguntas));	
 			if (!this.actividades.containsKey(id)) {
 				this.actividades.put(id, encuesta);
 			}
@@ -391,7 +410,7 @@ public class Sistema {
 		}else if (type.equals("tarea")) {
 			if (nuevo) {
 				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
-						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+"," + String.valueOf(started)+",'"+datelimit+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
+						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+",'"+fecha.toString()+" "+horaFormateada+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
 				StringBuilder notin = new StringBuilder();
 				notin.append("(");
 				int conteo = 0;
@@ -415,7 +434,7 @@ public class Sistema {
 			if (resultset.next()) {
 				comment = resultset.getString("comment");
 			}
-			Tarea tarea = new Tarea(creator, id, mandatory, description, difficulty, duration, started, datelimit, states, comment);
+			Tarea tarea = new Tarea(creator, id, mandatory, description, difficulty, duration, datelimit, states, comment);
 			if (!this.actividades.containsKey(id)) {
 				this.actividades.put(id, tarea);
 			}
@@ -567,13 +586,13 @@ public class Sistema {
 				String description = activity.getString("description");
 				String difficulty = activity.getString("difficulty");
 				int duration = activity.getInt("duration");
-				boolean started = activity.getBoolean("started");
-				String datelimit = activity.getString("datelimit");
+				//boolean started = activity.getBoolean("started");
+				LocalDateTime datelimit = activity.getTimestamp("datelimit").toLocalDateTime();
 				String type = activity.getString("type");
 				int calificacionMinima = activity.getInt("calificacionMinima");
 				String documentPath = activity.getString("documentPath");
 				//Actividad actividad = new Actividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, getEstadosActividad(id));
-				Actividad actividad = crearActividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, type, documentPath, calificacionMinima, getEstadosActividad(id), false, "");
+				Actividad actividad = crearActividad(creator, id, mandatory, description, difficulty, duration, datelimit, type, documentPath, calificacionMinima, getEstadosActividad(id), false, "");
 				
 				//ACAAAAAAAAAAAAAAAAA
 				if (!this.actividades.containsKey(id)) {
@@ -644,14 +663,14 @@ public class Sistema {
 	            String description = resultset.getString("description");
 	            String difficulty = resultset.getString("difficulty");
 	            int duration = resultset.getInt("duration");
-	            boolean started = resultset.getBoolean("started");
-	            String datelimit = resultset.getString("datelimit");
+	            //boolean started = resultset.getBoolean("started");
+	            LocalDateTime datelimit = resultset.getTimestamp("datelimit").toLocalDateTime();
 	            int calificacionMinima = resultset.getInt("calificacionMinima");
 	            String type = resultset.getString("type");
 	            String documentPath = resultset.getString("documentPath");
 
-	            actividadEncontrada = crearActividad(creator, id, mandatory, description, difficulty, duration, started, datelimit, type, documentPath, calificacionMinima, getEstadosActividad(id), false, "");
-
+	            actividadEncontrada = crearActividad(creator, id, mandatory, description, difficulty, duration, datelimit, type, documentPath, calificacionMinima, getEstadosActividad(id), false, "");
+	            
 	            
 	            if (!this.actividades.containsKey(id)) {
 	                this.actividades.put(id, actividadEncontrada);
@@ -763,5 +782,57 @@ public class Sistema {
 		Statement statement = this.connection.createStatement();
 		statement.executeUpdate("INSERT INTO answersActivity (idPregunta, idOpcion, usuario, respuesta) VALUES ("+String.valueOf(idPregunta)+","+String.valueOf(idOpcion)+",'"+login+"','"+respuesta+"')");
 		
+	}
+	public void borrarACEscogida(Actividad actividad, LearningPath LP) throws SQLException {
+		boolean found = false;
+		int indice = 0;
+		ArrayList<Actividad> activitiesLP = LP.getActivities();
+		for (int i = 0;i <activitiesLP.size();i++)
+		{
+			if (activitiesLP.get(i).getID() == actividad.getID()) 
+			{
+				indice = i;
+				found = true;
+				break;
+				
+			}
+		}
+		if (found)
+		{
+			activitiesLP.remove(indice);
+		}
+		LP.setActivities(activitiesLP);
+		this.learningPathsCreados.put(LP.getTitulo(),LP);
+		//Ya se quito la actividad del learning path, no se borro la actividad por si eventualmente se quiere copiar la actividad.
+		
+		borrarActividadCreatedActivities(actividad.getID(), LP.getTitulo());
+	}
+	
+	public void borrarActividadCreatedActivities(int idActividad, String nameLP) throws SQLException {
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate("DELETE FROM createdActivities CA WHERE CA.id = "+String.valueOf(idActividad)+"and CA.nameLPAssociated = '"+nameLP+"'");
+
+	
+	}
+	public void setLPs(HashMap<String, LearningPath> LPs) {
+		this.learningPathsCreados = LPs;
+	}
+	public void insertarReseñas(int idActividad, String login, String reseña) throws SQLException {
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate("INSERT INTO reseñas (idActividad, login, reseña) VALUES ("+String.valueOf(idActividad)+",'"+login+"','"+reseña+"')");
+	}
+	
+	public ArrayList<String> getReseñasActividad(int idActividad) throws SQLException{
+		ArrayList<String> reseñas = new ArrayList<String>();
+		Statement statement = this.connection.createStatement();
+		ResultSet resultset = statement.executeQuery("SELECT * FROM reseñas WHERE idActividad = "+idActividad);
+		while (resultset.next()) {
+			String reseñai = resultset.getString("reseña");
+			String login = resultset.getString("login");
+			int id = resultset.getInt("num");
+			reseñas.add(login+" : "+reseñai);
+			
+		}
+		return reseñas;
 	}
 }

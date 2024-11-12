@@ -1,5 +1,6 @@
 package System;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -8,8 +9,8 @@ public class Quiz extends Actividad {
 	private int calificacionMinima;
 	private HashMap<Integer, HashMap<String, Object>> respuestas;
 	
-	public Quiz(String creator, int id, boolean mandatory, String descripcion, String difficulty, int duration, boolean started, String dateLimit, HashMap<String, String[]> states, ArrayList<Pregunta> preguntas, int calificacionMinima, HashMap<Integer, HashMap<String, Object>> respuestas) {
-		super(creator, id, mandatory, descripcion, difficulty, duration, started, dateLimit, states);
+	public Quiz(String creator, int id, boolean mandatory, String descripcion, String difficulty, int duration, LocalDateTime dateLimit, HashMap<String, String[]> states, ArrayList<Pregunta> preguntas, int calificacionMinima, HashMap<Integer, HashMap<String, Object>> respuestas) {
+		super(creator, id, mandatory, descripcion, difficulty, duration, dateLimit, states);
 		this.preguntas = preguntas;
 		this.calificacionMinima = calificacionMinima;
 		this.respuestas = respuestas;

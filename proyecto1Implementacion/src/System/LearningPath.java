@@ -1,6 +1,7 @@
 package System;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -13,12 +14,12 @@ public class LearningPath {
 	public String difficulty;
 	private int duration;
 	public int rating;
-	protected String fechaCreacion;
-	protected String fechaModificacion;
+	protected LocalDateTime fechaCreacion;
+	protected LocalDateTime fechaModificacion;
 	public ArrayList<Actividad> activities;
 	public ArrayList<Usuario> estudiantesEnlistados;
 	//public ArrayList<String> reseñas;
-	public LearningPath(String creator, String titulo, String descripcionGeneral, String difficulty, int duration, int rating, String fechaCreacion, String fechaModificacion, Sistema sistema) throws SQLException {
+	public LearningPath(String creator, String titulo, String descripcionGeneral, String difficulty, int duration, int rating, LocalDateTime fechaCreacion, LocalDateTime fechaModificacion, Sistema sistema) throws SQLException {
 		this.creator = creator;
 		this.titulo = titulo;
 		this.descripcionGeneral = descripcionGeneral;
@@ -47,5 +48,8 @@ public class LearningPath {
 	}
 	public ArrayList<Usuario> getEstudiantesEnlistados(){
 		return this.estudiantesEnlistados;
+	}
+	public void setActivities(ArrayList<Actividad> newActivities) {
+		this.activities = newActivities;
 	}
 }
