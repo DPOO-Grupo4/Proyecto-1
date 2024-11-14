@@ -491,8 +491,10 @@ public class Console {
 		        	if (opcioni  == LPs.size()+1) {
 		        		break;
 		        	}
-		        	menuEdicion(sistema, scanner, LPs.get(opcioni-1));
-		        	
+		        	boolean runMenuEdicion = true;
+		        	while (runMenuEdicion) {
+		        		runMenuEdicion = menuEdicion(sistema, scanner, LPs.get(opcioni-1));
+		        	}
 		        	
 		            break;
 		            
@@ -619,7 +621,7 @@ public class Console {
 		boolean mandatory = scanner.nextBoolean();
 		System.out.println("DURACION (en minutos) : ");
 		int duration = scanner.nextInt();
-		System.out.println("FECHA LÍMITE : (Formato : yyyy-MM-dd HH:mm:ss");
+		System.out.println("FECHA LÍMITE : (Formato : yyyy-MM-dd HH:mm:ss)");
 		scanner.nextLine();
 		String dateLimitI = scanner.nextLine();
 		scanner.nextLine();
@@ -1044,7 +1046,7 @@ public class Console {
 			}else if  (opcioni>=0 & opcioni<activities.size()){
 				Actividad ACEscogida = activities.get(opcioni);
 				try {
-					sistema.borrarACEscogida(ACEscogida, LP);
+					sistema.borrarACEscogida(ACEscogida, LP, true);
 				} catch (SQLException e) {
 					System.out.println("Hubo algun error borrando la actividad que escogio");
 					
@@ -1105,12 +1107,16 @@ public class Console {
 			return false;
 		}
 		Actividad ACEscogida = activities.get(opcioni);
-		boolean result = runMenuModificarActividad1(sistema, scanner, ACEscogida);
+		boolean result = true;
+		while (result)
+		{
+			result = runMenuModificarActividad1(sistema, scanner, ACEscogida, LP);
+		}
 		System.out.println("________________________________________");
 		
 		return true;
 	}
-	public static boolean runMenuModificarActividad1(Sistema sistema, Scanner scanner, Actividad ACEscogida) {
+	public static boolean runMenuModificarActividad1(Sistema sistema, Scanner scanner, Actividad ACEscogida, LearningPath LP) {
 		System.out.println("________________________________________");
 		System.out.println("[0] Volver");
 		System.out.println("[1] Modificar descripción");
@@ -1118,10 +1124,213 @@ public class Console {
 		System.out.println("[3] Modificar dificultad");
 		System.out.println("[4] Modificar duración (en minutos)");
 		System.out.println("[5] Modificar fecha límite");
+		if (ACEscogida.getClass().getSimpleName().equals("Quiz")||ACEscogida.getClass().getSimpleName().equals("Examen")||ACEscogida.getClass().getSimpleName().equals("Encuesta")) {
+			System.out.println("[6] Modificar pregunta");
+		}
 		//System.out.println("[6] Reiniciar estados actividad");
 		System.out.println("Por favor digite el numero de la opción que describe lo que usted quiere hacer");
 		int opcion = scanner.nextInt();
 		System.out.println("________________________________________");
+		if (opcion == 0) {
+			return false;
+		}else if (opcion == 1) {
+			System.out.println("Por favor digite la nueva descripción de la actividad");
+			System.out.println("Nueva descripción: ");
+			scanner.nextLine();
+			String newDescription = scanner.nextLine();
+			scanner.nextLine();
+			try {
+				sistema.modificarDescripcionActividad(ACEscogida,LP, newDescription );
+			} catch (SQLException e) {
+				System.out.println("Hubo algun problema cambiando la descripción de la actividad "+String.valueOf(ACEscogida.getID()));
+			}
+			return true;
+		}else if (opcion == 2) {
+			System.out.println("Por favor digite la nueva obligatoriedad de la actividad");
+			System.out.println("Nueva obligatoriedad:");
+			boolean errorInput = true;
+			while (errorInput) {
+				try {
+					scanner.nextLine();
+					boolean newMandatory = scanner.nextBoolean();
+					
+					sistema.modificarObligatoriedadActividad(ACEscogida, LP, newMandatory);
+					errorInput = false;
+				}catch (InputMismatchException e) {
+					System.out.println("Solo se acepta 'true' o 'false'");
+					errorInput = true;
+				}catch (SQLException e) {
+					System.out.println("Hubo algun error modificando la obligatoriedad de la actividad");
+				}
+			}
+		}else if (opcion == 3) {
+			System.out.println("Por favor digite la nueva dificultad de la actividad ('fácil','media', 'difícil')");
+			System.out.println("Nueva dificultad:");
+			scanner.nextLine();
+			String newDifficulty = scanner.nextLine().toLowerCase();
+			
+			boolean wrongInput = true;
+			while (wrongInput) {
+				
+				if (!newDifficulty.equals("fácil") && !newDifficulty.equals("media") && !newDifficulty.equals("difícil")) {
+					scanner.nextLine();
+					System.out.println("Por favor digite una de las opciones 'fácil', 'media', 'difícil'");
+					newDifficulty = scanner.nextLine().toLowerCase();
+					
+				}else {
+					wrongInput = false;
+				}
+			}
+			scanner.nextLine();
+			try {
+				sistema.modificarDificultadActividad(ACEscogida, LP, newDifficulty);
+			} catch (SQLException e) {
+				System.out.println("Hubo un error modificando la dificultad de la actividad");
+			}
+			
+		}else if (opcion == 4) {
+			System.out.println("Por favor digite la nueva duración de la actividad");
+			System.out.println("Nueva duración:");
+			boolean wrongInput = true;
+			while (wrongInput) {
+				try {
+					int duration = scanner.nextInt();
+					sistema.modificarDuracionActividad(ACEscogida, LP, duration);
+					wrongInput = false;
+					
+				}catch (InputMismatchException e) {
+					System.out.println("Digito un formato incorrecto");
+					wrongInput = true;
+				} catch (SQLException e) {
+					System.out.println("Hubo un error modificando la duración de una actividad");
+				}
+			}
+			
+			
+		}else if (opcion == 5) {
+			System.out.println("Por favor digite la nueva fecha límite de la actividad");
+			System.out.println("Nueva fecha (Formato : yyyy-MM-dd HH:mm:ss):");
+			scanner.nextLine();
+			String dateLimitI = scanner.nextLine();
+			scanner.nextLine();
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			LocalDateTime dateLimit = LocalDateTime.parse(dateLimitI, formatter);
+			while (dateLimit.isBefore(LocalDateTime.now())) {
+				System.out.println("La fecha límite no puede haber pasado ya");
+				System.out.println("FECHA LÍMITE : (Formato : yyyy-MM-dd HH:mm:ss");
+				dateLimitI = scanner.nextLine();
+				scanner.nextLine();
+				formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+				dateLimit = LocalDateTime.parse(dateLimitI, formatter);
+			}
+			try {
+				sistema.modificarFechaLímiteActividad(ACEscogida, LP, dateLimit);
+			} catch (SQLException e) {
+				System.out.println("Hubo un error modificando la fecha límite de la actividad");
+			}
+		}else if (opcion == 6 && ACEscogida.getClass().getSimpleName().equals("Quiz")) {
+			Quiz quizEscogido = (Quiz) ACEscogida;
+			ArrayList<Pregunta> preguntas = quizEscogido.getPreguntas();
+			for (int i = 0; i<preguntas.size();i++)
+			{
+				System.out.println("< "+String.valueOf(i)+" >  "+preguntas.get(i).getEnunciado() + " (ID: "+String.valueOf(preguntas.get(i).getID())+" )");
+			}
+			System.out.println("< "+String.valueOf(preguntas.size()) + " > Añadir una pregunta");
+			System.out.println("< "+String.valueOf(preguntas.size()+1)+" > Volver");
+			System.out.println("Por favor escoja una de las anteriores opciones : ");
+			System.out.println("Indice : ");
+			int opcioni = scanner.nextInt();
+			if (opcioni == preguntas.size()+1) 
+			{
+				return true;
+			}
+			else 
+			{
+				
+				
+				runMenuModificarPregunta(sistema, scanner, LP, quizEscogido, preguntas.get(opcioni));
+				
+				
+			}
+		}
+		return true;
+	}
+	
+	public static boolean runMenuModificarPregunta(Sistema sistema, Scanner scanner, LearningPath LP, Actividad actividad, Pregunta pregunta)
+	{
+		
+		System.out.println("_______________________________________________________");
+		System.out.println("A continuación escoja una de las siguientes opciones para lograr modificar ");
+		System.out.println("[0] Eliminar pregunta");
+		System.out.println("[1] Cambiar el enunciado de la pregunta");
+		if (actividad.getClass().getSimpleName().equals("Quiz"))
+		{
+			System.out.println("[2] Eliminar opción de pregunta");
+			System.out.println("[3] Añadir opcion a la pregunta");
+			System.out.println("[4] Salir");
+			Quiz quiz = (Quiz) actividad;
+			int opcion = scanner.nextInt();
+			if (opcion == 4)
+			{
+				return false;
+			}
+			else if (opcion == 0)
+			{
+				try {
+					boolean result = sistema.eliminarPregunta(LP, actividad, pregunta, true);
+					if (result == false) {
+						System.out.println("No se puede eleminar esa pregunta");
+					}
+				} catch (SQLException e) {
+					System.out.println("Hubo algun error borrando la pregunta");
+					e.printStackTrace();
+				}
+			}else if (opcion == 1)
+			{
+				System.out.println("Por favor digite el nuevo enunciado de su pregunta");
+				scanner.nextLine();
+				String newEnunciado = scanner.nextLine();
+				scanner.nextLine();
+				try {
+					sistema.modificarEnunciadoPregunta(pregunta.getID(), newEnunciado, LP, actividad);
+				} catch (SQLException e) {
+					System.out.println("Hubo algún error intentando modificar el enunciado de su pregunta");
+				}
+			}else if (opcion ==2) {
+				System.out.println("______________________________________________");
+				System.out.println("A continuación se despliegan las opciones de la pregunta que escogio ¿Cuál desea borrar?");
+				PreguntaOpcionMultiple preguntai = (PreguntaOpcionMultiple) pregunta;
+				ArrayList<Opcion> opciones = preguntai.getOpciones();
+				for (int i = 0; i <opciones.size();i++)
+				{
+					System.out.println("< "+String.valueOf(i)+" > ("+String.valueOf(opciones.get(i).getID())+") "+opciones.get(i).getEnunciado());
+				}
+				System.out.println("< "+String.valueOf(opciones.size())+ " > Volver");
+				System.out.println("Seleccione el indice según lo que quiera hacer: ");
+				int opcioni = scanner.nextInt();
+				if (opcioni == opciones.size()) {
+					return true;
+				}
+				else
+				{
+					
+				}
+				System.out.println("______________________________________________");
+			}
+				
+			return true;
+			
+		}else if (actividad.getClass().getSimpleName().equals("Examen"))
+		{
+			System.out.println("[2] Salir");
+			Examen examen = (Examen) actividad;
+		}else if (actividad.getClass().getSimpleName().equals("Encuesta"))
+		{
+			System.out.println("[2] Salir");
+			Encuesta encuesta = (Encuesta) actividad;
+		}
+		
+		System.out.println("_______________________________________________________");
 		return true;
 	}
 }

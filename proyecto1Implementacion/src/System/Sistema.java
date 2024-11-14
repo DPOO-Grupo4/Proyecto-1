@@ -47,8 +47,11 @@ public class Sistema {
 	
 	public void cargarSistema() {
 		try {
-			
-			System.out.println("La base de datos ha sido creada con exito");
+			this.estudiantes = new HashMap<String, Estudiante>();
+			this.profesores = new HashMap<String, Profesor>();
+			this.learningPathsCreados = new HashMap<String, LearningPath>();
+			this.actividades = new HashMap<Integer, Actividad>();
+			//System.out.println("La base de datos ha sido creada con exito");
 			Statement statement = this.connection.createStatement();
 			ResultSet resultset = statement.executeQuery("SELECT * FROM USERS");
 			//executeQuery con SELECT
@@ -783,7 +786,7 @@ public class Sistema {
 		statement.executeUpdate("INSERT INTO answersActivity (idPregunta, idOpcion, usuario, respuesta) VALUES ("+String.valueOf(idPregunta)+","+String.valueOf(idOpcion)+",'"+login+"','"+respuesta+"')");
 		
 	}
-	public void borrarACEscogida(Actividad actividad, LearningPath LP) throws SQLException {
+	public void borrarACEscogida(Actividad actividad, LearningPath LP, boolean borrarDelTodo) throws SQLException {
 		boolean found = false;
 		int indice = 0;
 		ArrayList<Actividad> activitiesLP = LP.getActivities();
@@ -805,7 +808,9 @@ public class Sistema {
 		this.learningPathsCreados.put(LP.getTitulo(),LP);
 		//Ya se quito la actividad del learning path, no se borro la actividad por si eventualmente se quiere copiar la actividad.
 		
-		borrarActividadCreatedActivities(actividad.getID(), LP.getTitulo());
+		if (borrarDelTodo) {
+			borrarActividadCreatedActivities(actividad.getID(), LP.getTitulo());
+		}
 	}
 	
 	public void borrarActividadCreatedActivities(int idActividad, String nameLP) throws SQLException {
@@ -835,4 +840,202 @@ public class Sistema {
 		}
 		return reseñas;
 	}
+	public void modificarDescripcionActividad(Actividad ACEscogida, LearningPath LP, String newDescription) throws SQLException {
+		borrarACEscogida(ACEscogida, LP, false);
+		ACEscogida.setDescrition(newDescription);
+		HashMap<String, LearningPath> LPsCreados = this.learningPathsCreados;
+		ArrayList<Actividad> activitiesLP = LP.getActivities();
+		activitiesLP.add(ACEscogida);
+		LP.setActivities(activitiesLP);
+		LPsCreados.put(LP.getTitulo(), LP);
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate("UPDATE activities SET description = '"+newDescription+"' WHERE id = "+String.valueOf(ACEscogida.getID()));
+		
+	}
+	public void modificarObligatoriedadActividad(Actividad ACEscogida, LearningPath LP, boolean newMandatory) throws SQLException {
+		borrarACEscogida(ACEscogida, LP, false);
+		ACEscogida.setMandatory(newMandatory);
+		HashMap<String, LearningPath> LPsCreados = this.learningPathsCreados;
+		ArrayList<Actividad> activitiesLP = LP.getActivities();
+		activitiesLP.add(ACEscogida);
+		LP.setActivities(activitiesLP);
+		LPsCreados.put(LP.getTitulo(), LP);
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate("UPDATE activities SET mandatory = "+String.valueOf(newMandatory)+" WHERE id = "+String.valueOf(ACEscogida.getID()));
+		
+	}
+	
+	public void modificarDificultadActividad(Actividad ACEscogida, LearningPath LP, String newDifficulty) throws SQLException {
+		borrarACEscogida(ACEscogida, LP, false);
+		ACEscogida.setDifficulty(newDifficulty);
+		HashMap<String, LearningPath> LPsCreados = this.learningPathsCreados;
+		ArrayList<Actividad> activitiesLP = LP.getActivities();
+		activitiesLP.add(ACEscogida);
+		LP.setActivities(activitiesLP);
+		LPsCreados.put(LP.getTitulo(), LP);
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate("UPDATE activities SET difficulty = '"+String.valueOf(newDifficulty)+"' WHERE id = "+String.valueOf(ACEscogida.getID()));
+		
+	}
+	
+	public void modificarDuracionActividad(Actividad ACEscogida, LearningPath LP, int newDuration) throws SQLException {
+		borrarACEscogida(ACEscogida, LP, false);
+		ACEscogida.setDuration(newDuration);
+		HashMap<String, LearningPath> LPsCreados = this.learningPathsCreados;
+		ArrayList<Actividad> activitiesLP = LP.getActivities();
+		activitiesLP.add(ACEscogida);
+		LP.setActivities(activitiesLP);
+		LPsCreados.put(LP.getTitulo(), LP);
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate("UPDATE activities SET duration = "+String.valueOf(newDuration)+" WHERE id = "+String.valueOf(ACEscogida.getID()));
+		
+	}
+	
+	public void modificarFechaLímiteActividad(Actividad ACEscogida, LearningPath LP, LocalDateTime newDateLimit) throws SQLException {
+		borrarACEscogida(ACEscogida, LP, false);
+		ACEscogida.setDateLimit(newDateLimit);
+		HashMap<String, LearningPath> LPsCreados = this.learningPathsCreados;
+		ArrayList<Actividad> activitiesLP = LP.getActivities();
+		activitiesLP.add(ACEscogida);
+		LP.setActivities(activitiesLP);
+		LPsCreados.put(LP.getTitulo(), LP);
+		String fecha = newDateLimit.toLocalDate().toString();
+		String time = newDateLimit.toLocalTime().toString();
+		if (time.length()<8) {
+			time = time+":00";
+		}
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate("UPDATE activities SET dateLimit = '"+fecha+" "+time+"' WHERE id = "+String.valueOf(ACEscogida.getID()));
+		
+	}
+	public boolean eliminarPregunta(LearningPath LP, Actividad actividad, Pregunta pregunta, boolean esQuiz) throws SQLException
+	{	
+		
+		ArrayList<Pregunta> preguntas = getPreguntasActividad(actividad.getID());
+		
+		int indice = 0;
+		boolean found = false;
+		for (int i = 0; i <preguntas.size();i++) 
+		{
+			if (preguntas.get(i).getID() == pregunta.getID()) {
+				found = true;
+				indice = i;
+			}
+		}
+		preguntas.remove(indice);
+		if (actividad.getClass().getSimpleName().equals("Quiz")) 
+		{	
+			Quiz quiz = (Quiz) actividad;
+			if (quiz.getCalificacionMinima()> quiz.getPreguntas().size()-1)
+			{
+				
+				return false;
+			}
+			borrarACEscogida(actividad, LP, false);
+			//Quiz quiz = (Quiz) actividad;
+			quiz.setPreguntas(preguntas);
+			ArrayList<Actividad> activitiesLP = LP.getActivities();
+			activitiesLP.add(quiz);
+			LP.setActivities(activitiesLP);
+			this.learningPathsCreados.put(LP.getTitulo(), LP);
+			this.actividades.put(quiz.getID(), quiz);
+			
+		}
+		else if (actividad.getClass().getSimpleName().equals("Examen")) 
+		{	
+			Examen examen = (Examen) actividad;
+			if (examen.getPreguntas().size()-1 == 0)
+			{
+				return false;
+			}
+			borrarACEscogida(actividad, LP, false);
+			//Examen examen = (Examen) actividad;
+			examen.setPreguntas(preguntas);
+			ArrayList<Actividad> activitiesLP = LP.getActivities();
+			activitiesLP.add(examen);
+			LP.setActivities(activitiesLP);
+			this.learningPathsCreados.put(LP.getTitulo(), LP);
+			this.actividades.put(examen.getID(), examen);
+			
+		}
+		else if (actividad.getClass().getSimpleName().equals("Encuesta")) 
+		{	
+			Encuesta encuesta = (Encuesta) actividad;
+			if (encuesta.getPreguntas().size()-1 == 0) 
+			{
+				return false;
+			}
+			borrarACEscogida(actividad, LP, false);
+			//Encuesta encuesta = (Encuesta) actividad;
+			encuesta.setPreguntas(preguntas);
+			ArrayList<Actividad> activitiesLP = LP.getActivities();
+			activitiesLP.add(encuesta);
+			LP.setActivities(activitiesLP);
+			this.learningPathsCreados.put(LP.getTitulo(), LP);
+			this.actividades.put(encuesta.getID(), encuesta);
+			
+		}
+		Statement statement = this.connection.createStatement();
+		if (esQuiz)
+		{
+			statement.executeUpdate("DELETE FROM answersActivity WHERE idPregunta = "+String.valueOf(pregunta.getID()));
+			statement.executeUpdate("DELETE FROM optionsAsToQuestions WHERE idPregunta = "+String.valueOf(pregunta.getID()));
+			
+		}
+		statement.executeUpdate("DELETE FROM questions WHERE idPregunta = " + String.valueOf(pregunta.getID()));
+		statement.executeUpdate("DELETE FROM questionsAsToQuestionaries WHERE idPregunta = " + String.valueOf(pregunta.getID()));
+		return true;
+	}
+	
+	public void modificarEnunciadoPregunta(int idPregunta, String newEnunciado, LearningPath LP, Actividad actividad) throws SQLException {
+		Statement statement = this.connection.createStatement();
+		
+		
+		
+		statement.executeUpdate("UPDATE questions SET \"statement\" = '"+ newEnunciado +"' WHERE idPregunta = "+String.valueOf(idPregunta));
+		ArrayList<Pregunta> preguntas = getPreguntasActividad(actividad.getID());
+		if (actividad.getClass().getSimpleName().equals("Quiz"))
+		{
+			Quiz quiz = (Quiz) actividad;
+			
+			borrarACEscogida(actividad, LP, false);
+			//Quiz quiz = (Quiz) actividad;
+			quiz.setPreguntas(preguntas);
+			ArrayList<Actividad> activitiesLP = LP.getActivities();
+			activitiesLP.add(quiz);
+			LP.setActivities(activitiesLP);
+			this.learningPathsCreados.put(LP.getTitulo(), LP);
+			this.actividades.put(quiz.getID(), quiz);
+		}
+		else if (actividad.getClass().getSimpleName().equals("Examen")) 
+		{	
+			Examen examen = (Examen) actividad;
+			
+			borrarACEscogida(actividad, LP, false);
+			//Examen examen = (Examen) actividad;
+			examen.setPreguntas(preguntas);
+			ArrayList<Actividad> activitiesLP = LP.getActivities();
+			activitiesLP.add(examen);
+			LP.setActivities(activitiesLP);
+			this.learningPathsCreados.put(LP.getTitulo(), LP);
+			this.actividades.put(examen.getID(), examen);
+			
+		}
+		else if (actividad.getClass().getSimpleName().equals("Encuesta")) 
+		{	
+			Encuesta encuesta = (Encuesta) actividad;
+		
+			borrarACEscogida(actividad, LP, false);
+			//Encuesta encuesta = (Encuesta) actividad;
+			encuesta.setPreguntas(preguntas);
+			ArrayList<Actividad> activitiesLP = LP.getActivities();
+			activitiesLP.add(encuesta);
+			LP.setActivities(activitiesLP);
+			this.learningPathsCreados.put(LP.getTitulo(), LP);
+			this.actividades.put(encuesta.getID(), encuesta);
+			
+		}
+	}
+		
+	
 }

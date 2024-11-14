@@ -53,4 +53,19 @@ public class Actividad {
 	public void setState(HashMap<String, String[]> state) {
 		this.state = state;
 	}
+	public void setDescrition(String description) {
+		this.descripcion = description;
+	}
+	public void setMandatory(boolean mandatory) {
+		this.mandatory = mandatory;
+	}
+	public void setDifficulty(String newDifficulty) {
+		this.difficulty = newDifficulty;
+	}
+	public void setDuration(int newDuration) {
+		this.duration = newDuration;
+	}
+	public void setDateLimit (LocalDateTime newDateLimit) {
+		this.dateLimit = newDateLimit;
+	}
 }
