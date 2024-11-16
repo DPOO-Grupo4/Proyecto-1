@@ -68,4 +68,8 @@ public class Actividad {
 	public void setDateLimit (LocalDateTime newDateLimit) {
 		this.dateLimit = newDateLimit;
 	}
+	public boolean getMandatory()
+	{
+		return this.mandatory;
+	}
 }

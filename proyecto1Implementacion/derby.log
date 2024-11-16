@@ -1,6 +1,6 @@
 ----------------------------------------------------------------
-Sat Nov 16 10:26:58 COT 2024:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.17.1.0 - (1913217): instance a816c00e-0193-3595-9e15-00000f2f4be8 
+Sat Nov 16 16:14:57 COT 2024:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.17.1.0 - (1913217): instance a816c00e-0193-36d4-346d-00000f2f4c18 
 on database directory C:\Users\juanj\git\proyecto1DPOO\proyecto1Implementacion\DataBase with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@51521cc1 
 Loaded from file:/C:/Users/juanj/git/proyecto1DPOO/proyecto1Implementacion/derbyJars/derby.jar
 java.vendor=Eclipse Adoptium

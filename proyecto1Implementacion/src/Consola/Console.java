@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InputMismatchException;
@@ -217,6 +218,21 @@ public class Console {
 	}
 	public static boolean mostrarLearningPath(Sistema sistema, Scanner scanner, ArrayList<LearningPath> LPsInscritos, int opcion) throws SQLException {
 		LearningPath LPEscogido = LPsInscritos.get(opcion);
+		boolean aprobado = sistema.verificarEstadoLP(sistema.getSession(), LPEscogido);
+		if (aprobado)
+		{
+			System.out.println("-------------------------------------------");
+			System.out.println("¡Felicidades! completaste el learning path ");
+			System.out.println("Vuelve en un tiempo cuando tengas la certeza de que el profesor evaluo todas las actividades");
+			System.out.println("-------------------------------------------");
+		}
+		else
+		{
+			System.out.println("-------------------------------------------");
+			System.out.println("Este learning path no esta acabado o esta reprobado");
+			System.out.println("Nota: Si ya completo todas las actividades obligatorias y el profesor calificó, probablemente entrego algo tarde");
+			System.out.println("-------------------------------------------");
+		}
 		System.out.println(LPEscogido.getTitulo());
 		System.out.println(LPEscogido.getDescripcion());
 		System.out.println("DIFICULTAD: " +LPEscogido.getDifficulty());
@@ -245,10 +261,10 @@ public class Console {
 	public static boolean mostrarActividad(Sistema sistema, Scanner scanner, ArrayList<Actividad> actividades, int opcion) throws SQLException {
 		Actividad actividadEscogida = actividades.get(opcion);
 		System.out.println("Actividad : "+ String.valueOf(actividadEscogida.getID()));
-		System.out.println(actividadEscogida.getDescripcion());
-		System.out.println(actividadEscogida.getDifficulty());
-		System.out.println(String.valueOf(actividadEscogida.getDuration()));
-		System.out.println(actividadEscogida.getDateLimit());
+		System.out.println("Descripción : " + actividadEscogida.getDescripcion());
+		System.out.println("Dificultad : "+ actividadEscogida.getDifficulty());
+		System.out.println("Duración : " +String.valueOf(actividadEscogida.getDuration()) + " minutos");
+		System.out.println("Fecha límite : " + actividadEscogida.getDateLimit());
 		HashMap<String, String[]>states = actividadEscogida.getState();
 		boolean yaAprobada = false;
 		if (states.containsKey(sistema.getSession().getLogin())) {
@@ -261,10 +277,9 @@ public class Console {
 			System.out.println("[0] Iniciar actividad ");
 		}
 		System.out.println("[1] Publicar reseña sobre esta actividad");
-		System.out.println("[2] Calificar actividad (0-5)");
-		System.out.println("[3] salir");
+		System.out.println("[2] salir");
 		int opcion3 = scanner.nextInt();
-		while (opcion3<0 & opcion3>3) {
+		while (opcion3<0 & opcion3>2) {
 			opcion3 = scanner.nextInt();
 		}
 		HashMap<String, String[]> stateBORRAR = actividadEscogida.getState();
@@ -381,7 +396,7 @@ public class Console {
 			while (opcioni != 0) {
 				opcioni = scanner.nextInt();
 			}if (opcioni == 0) {
-				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0],LocalDateTime.now().toString() ,false, false);
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0],LocalDateTime.now().toString() ,true, false);
 				return false;
 			}
 			return true;
@@ -400,7 +415,7 @@ public class Console {
 			while (opcioni != 0) {
 				opcioni = scanner.nextInt();
 			}if (opcioni == 0) {
-				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0],LocalDateTime.now().toString() ,false, false);
+				sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0],LocalDateTime.now().toString() ,true, false);
 				return false;
 			}
 			return true;
@@ -595,8 +610,13 @@ public class Console {
 		}else if (opcion == 0) {
 			boolean runMenuCA = true;
 			while (runMenuCA) {
-				runMenuCA = menuCreacionActividad(sistema, scanner, LP);
-				
+				try {
+					runMenuCA = menuCreacionActividad(sistema, scanner, LP);
+				} catch (DateTimeParseException e) {
+					 System.out.println("Usé el formato de fechas que se le pide");
+					 runMenuCA = false;
+					
+				}
 			}
 			return true;
 		}else if (opcion == 1) {
@@ -618,7 +638,7 @@ public class Console {
 			return true;
 		}
 	}
-	public static boolean menuCreacionActividad(Sistema sistema, Scanner scanner, LearningPath LP) throws SQLException {
+	public static boolean menuCreacionActividad(Sistema sistema, Scanner scanner, LearningPath LP) throws SQLException, DateTimeParseException {
 		System.out.println("______________________________________");
 		System.out.println("A continuación se le va a pedir que digite una información necesaria para la creacion de la actividad");
 		System.out.println("DESCRIPCION : ");
@@ -638,6 +658,7 @@ public class Console {
 		boolean mandatory = scanner.nextBoolean();
 		System.out.println("DURACION (en minutos) : ");
 		int duration = scanner.nextInt();
+		
 		System.out.println("FECHA LÍMITE : (Formato : yyyy-MM-dd HH:mm:ss)");
 		scanner.nextLine();
 		String dateLimitI = scanner.nextLine();
@@ -1126,14 +1147,21 @@ public class Console {
 		Actividad ACEscogida = activities.get(opcioni);
 		boolean result = true;
 		while (result)
-		{
-			result = runMenuModificarActividad1(sistema, scanner, ACEscogida, LP);
+		{	
+			try {
+				result = runMenuModificarActividad1(sistema, scanner, ACEscogida, LP);
+			}
+			catch (DateTimeParseException e)
+			{
+				System.out.println("Use el formato de fecha que se le pide");
+				result = false;
+			}
 		}
 		System.out.println("________________________________________");
 		
 		return true;
 	}
-	public static boolean runMenuModificarActividad1(Sistema sistema, Scanner scanner, Actividad ACEscogida, LearningPath LP) {
+	public static boolean runMenuModificarActividad1(Sistema sistema, Scanner scanner, Actividad ACEscogida, LearningPath LP) throws DateTimeParseException {
 		System.out.println("________________________________________");
 		System.out.println("[0] Volver");
 		System.out.println("[1] Modificar descripción");

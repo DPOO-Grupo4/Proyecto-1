@@ -412,7 +412,7 @@ public class Sistema {
 		
 		}else if (type.equals("tarea")) {
 			if (nuevo) {
-				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, started, datelimit, type, documentpath, comment, calificacionminima)"
+				globalStatement.executeUpdate("INSERT INTO activities (creator, mandatory, description, difficulty, duration, datelimit, type, documentpath, comment, calificacionminima)"
 						+ " VALUES ('"+creator+"',"+String.valueOf(mandatory)+",'"+description +"','"+ difficulty + "',"+String.valueOf(duration)+",'"+fecha.toString()+" "+horaFormateada+"','"+type+"','"+documentPath+"','"+comment+"',"+String.valueOf(calificacionMinima) +")");
 				StringBuilder notin = new StringBuilder();
 				notin.append("(");
@@ -1113,6 +1113,36 @@ public class Sistema {
 		this.learningPathsCreados.put(LP.getTitulo(), LP);
 		this.actividades.put(quiz.getID(), quiz);
 		return "";
+	}
+	public boolean verificarEstadoLP(Usuario usuario, LearningPath LP)
+	{
+		ArrayList<Actividad> activitiesLP = LP.getActivities();
+		boolean aprobado = true;
+		
+		for (Actividad A : activitiesLP)
+			
+		{
+			HashMap<String, String[]> states = A.getState();
+			if (!states.containsKey(usuario.getLogin()) && A.getMandatory())
+			{
+				return false;
+			}
+			//String[] state = states.get(usuario.getLogin());
+			if (A.getMandatory())
+			{
+				String[] state = states.get(usuario.getLogin());
+				if (!state[2].equals("true"))
+				{
+					aprobado = false;
+				}
+				if (LocalDateTime.parse(state[1]).isBefore(A.getDateLimit()))
+				{
+					aprobado = false;
+				}
+				
+			}
+		}
+		return aprobado;
 	}
 		
 	
