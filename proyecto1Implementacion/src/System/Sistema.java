@@ -1036,6 +1036,84 @@ public class Sistema {
 			
 		}
 	}
+	public String eliminarOpcion(Opcion opcion,PreguntaOpcionMultiple pregunta, Actividad actividad, LearningPath LP) throws SQLException
+	{
+		if (pregunta.getOpciones().size()-1<2)
+		{
+			return "Solo hay dos opciones en este pregunta, es el mínimo";
+		}
+		if (opcion.getCorrect() == true)
+		{
+			return "No puede borrar la opción correcta, en todo caso añada una opción correcta nueva";
+		}
+		
+		Statement statement = this.connection.createStatement();
+		statement.executeUpdate("DELETE FROM answersActivity WHERE idOpcion = "+String.valueOf(opcion.getID()));
+		statement.executeUpdate("DELETE FROM optionsAsToQuestions WHERE idOpcion = "+String.valueOf(opcion.getID()));
+		
+		ArrayList<Pregunta> preguntas = getPreguntasActividad(actividad.getID());
+		if (actividad.getClass().getSimpleName().equals("Quiz"))
+		{
+			Quiz quiz = (Quiz) actividad;
+			
+			borrarACEscogida(actividad, LP, false);
+			//Quiz quiz = (Quiz) actividad;
+			quiz.setPreguntas(preguntas);
+			ArrayList<Actividad> activitiesLP = LP.getActivities();
+			activitiesLP.add(quiz);
+			LP.setActivities(activitiesLP);
+			this.learningPathsCreados.put(LP.getTitulo(), LP);
+			this.actividades.put(quiz.getID(), quiz);
+		}
+		return "";
+	}
+	
+	public String añadirOpcion(PreguntaOpcionMultiple pregunta,String enunciado,boolean correct,String explicacion, boolean borrarYaCorrecta, Actividad actividad, LearningPath LP) throws SQLException
+	{
+		Statement statement = this.connection.createStatement();
+		if (correct && !borrarYaCorrecta)
+		{
+			return "Se cancelo la acción correctamente";
+		}
+		if (pregunta.getOpciones().size() == 4)
+		{
+			return "Ya hay cuatro opciones en esta pregunta, no puedes añadir más";
+		}
+		for (Opcion o : pregunta.getOpciones())
+		{
+			if (enunciado.equals(o.getEnunciado()))
+			{
+				return "No puedes insertar una opción con el mismo enunciado que una opción ya existente";
+			}
+			if (o.getCorrect() && correct)
+			{
+				statement.executeUpdate("DELETE FROM answersActivity WHERE idOpcion = "+String.valueOf(o.getID()));
+				statement.executeUpdate("DELETE FROM optionsAsToQuestions WHERE idOpcion = "+String.valueOf(o.getID()));
+			}
+		}
+		statement.executeUpdate("INSERT INTO optionsAsToQuestions (idPregunta, explicacion, enunciado, correct) VALUES ("+String.valueOf(pregunta.getID())+",'"+explicacion+"','"+enunciado+"',"+String.valueOf(correct)+")",Statement.RETURN_GENERATED_KEYS);
+		/*
+		ResultSet resultset = statement.getGeneratedKeys();
+		while (resultset.next())
+		{
+			int idOpcion = resultset.getInt(1);
+			
+		}
+		Esto no es necesario acá pero puede ser útil más adelante.
+		*/
+		ArrayList<Pregunta> preguntas = getPreguntasActividad(actividad.getID());
+		Quiz quiz = (Quiz) actividad;
+		
+		borrarACEscogida(actividad, LP, false);
+		//Quiz quiz = (Quiz) actividad;
+		quiz.setPreguntas(preguntas);
+		ArrayList<Actividad> activitiesLP = LP.getActivities();
+		activitiesLP.add(quiz);
+		LP.setActivities(activitiesLP);
+		this.learningPathsCreados.put(LP.getTitulo(), LP);
+		this.actividades.put(quiz.getID(), quiz);
+		return "";
+	}
 		
 	
 }

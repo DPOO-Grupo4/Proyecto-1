@@ -123,8 +123,10 @@ public class Console {
 		try {
 			String message = sistema.iniciarSesion(login, password);
 			System.out.println(message);
-			menuAplicacion(sistema, scanner);
-			
+			if (!message.equals("Su usuario o contraseña son erróneos"))
+			{
+				menuAplicacion(sistema, scanner);
+			}
 			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -338,7 +340,7 @@ public class Console {
 				sistema.actualizarRespuestaUsuario(sistema.getSession(), pregunta.getID(), "NULL", respuestaUsuario, false);
 				System.out.println("Su respuesta fue enviada con exito");
 			}
-			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0], LocalDateTime.now().toString(), false, false);
+			sistema.actualizarEstado(sistema.getSession(), actividadEscogida, state.get(sistema.getSession().getLogin())[0], LocalDateTime.now().toString(), true, false);
 			return true;
 		}else if (actividadEscogida.getClass().getSimpleName().equals("Encuesta") & opcion3==0 & !yaAprobada) {
 			HashMap<String, String[]> state = actividadEscogida.getState();
@@ -454,8 +456,16 @@ public class Console {
 	                String descripcionGeneral = scanner.nextLine();
 	                scanner.nextLine();
 	
-	                System.out.print("Ingrese la dificultad (Basico, Intermedio, Avanzado): ");
-	                String dificultad = scanner.next();
+	                System.out.print("Ingrese la dificultad ('fácil','media', 'difícil'): ");
+	                String dificultad = scanner.nextLine().toLowerCase();
+	                scanner.nextLine();
+	                while (!dificultad.equals("fácil")&&!dificultad.equals("media")&&!dificultad.equals("difícil"))
+	                {
+	                	System.out.println("Por favor digite una dificultad de las que se le ofrecio");
+	                	dificultad = scanner.nextLine().toLowerCase();
+	                	scanner.nextLine();
+	                }
+	                
 	
 	                System.out.print("Ingrese la duración en minutos (Valores Enteros): ");
 	                int duracion = scanner.nextInt();
@@ -615,8 +625,15 @@ public class Console {
 		scanner.nextLine();
 		String descripcion = scanner.nextLine();
 		scanner.nextLine();
-		System.out.println("DIFICULTAD : ");
-		String dificultad = scanner.next();
+		System.out.println("DIFICULTAD : ('fácil', 'media', 'difícil')");
+		String dificultad = scanner.nextLine();
+		scanner.nextLine();
+		while (!dificultad.equals("fácil")&& !dificultad.equals("media")&&!dificultad.equals("difícil"))
+		{
+			System.out.println("Por favor elija una de las dificultades disponibles");
+			dificultad = scanner.nextLine();
+			scanner.nextLine();
+		}
 		System.out.println("OBLIGATORIA (true, false) : ");
 		boolean mandatory = scanner.nextBoolean();
 		System.out.println("DURACION (en minutos) : ");
@@ -727,7 +744,7 @@ public class Console {
 						}
 						if (correct && !yaCorrecto) {
 							yaCorrecto = true;
-						}
+						} 
 						System.out.println("¿Por qué la opcion es correcta o incorrecta?");
 						scanner.nextLine();
 						String explicacion = scanner.nextLine();
@@ -949,7 +966,7 @@ public class Console {
 				for (int i = 0; i < preguntas.size(); i++) {
 					System.out.println("["+String.valueOf(i)+"] Pregunta : "+ preguntas.get(i).getID());
 				}
-				System.out.println("["+String.valueOf(preguntas.size()) + "] Aprobar");
+				System.out.println("["+String.valueOf(preguntas.size()) + "] Reprobar");
 				System.out.println("["+String.valueOf(preguntas.size()+1)+"] Volver");
 				int opcioni = scanner.nextInt();
 				if (opcioni == preguntas.size()+1) {
@@ -964,7 +981,7 @@ public class Console {
 					System.out.println(((Opcion) array[2]).getEnunciado());
 					
 				}else if(opcioni == preguntas.size()) {
-					sistema.actualizarEstado(estudiante, quiz, state.get(estudiante.getLogin())[0], state.get(estudiante.getLogin())[1], true, true);
+					sistema.actualizarEstado(estudiante, quiz, state.get(estudiante.getLogin())[0], state.get(estudiante.getLogin())[1], false, true);
 				}
 				
 				else {
@@ -976,7 +993,7 @@ public class Console {
 				for (int i = 0; i < preguntas.size(); i++) {
 					System.out.println("["+String.valueOf(i)+"] Pregunta : "+ preguntas.get(i).getID());
 				}
-				System.out.println("["+String.valueOf(preguntas.size()) + "] Aprobar");
+				System.out.println("["+String.valueOf(preguntas.size()) + "] Reprobar");
 				System.out.println("["+String.valueOf(preguntas.size()+1)+"] Volver");
 				int opcioni = scanner.nextInt();
 				if (opcioni == preguntas.size()+1) {
@@ -990,7 +1007,7 @@ public class Console {
 					System.out.println(((String) array[0]));
 					
 				}else if(opcioni == preguntas.size()) {
-					sistema.actualizarEstado(estudiante, examen, state.get(estudiante.getLogin())[0], state.get(estudiante.getLogin())[1], true, true);
+					sistema.actualizarEstado(estudiante, examen, state.get(estudiante.getLogin())[0], state.get(estudiante.getLogin())[1], false, true);
 				}
 				
 				else {
@@ -1002,7 +1019,7 @@ public class Console {
 				for (int i = 0; i < preguntas.size(); i++) {
 					System.out.println("["+String.valueOf(i)+"] Pregunta : "+ preguntas.get(i).getID());
 				}
-				System.out.println("["+String.valueOf(preguntas.size()) + "] Aprobar");
+				System.out.println("["+String.valueOf(preguntas.size()) + "] Reprobar");
 				System.out.println("["+String.valueOf(preguntas.size()+1)+"] Volver");
 				int opcioni = scanner.nextInt();
 				if (opcioni == preguntas.size()+1) {
@@ -1016,7 +1033,7 @@ public class Console {
 					System.out.println(((String) array[0]));
 					
 				}else if(opcioni == preguntas.size()) {
-					sistema.actualizarEstado(estudiante, encuesta, state.get(estudiante.getLogin())[0], state.get(estudiante.getLogin())[1], true, true);
+					sistema.actualizarEstado(estudiante, encuesta, state.get(estudiante.getLogin())[0], state.get(estudiante.getLogin())[1], false, true);
 				}
 				
 				else {
@@ -1163,6 +1180,7 @@ public class Console {
 					System.out.println("Hubo algun error modificando la obligatoriedad de la actividad");
 				}
 			}
+			
 		}else if (opcion == 3) {
 			System.out.println("Por favor digite la nueva dificultad de la actividad ('fácil','media', 'difícil')");
 			System.out.println("Nueva dificultad:");
@@ -1244,11 +1262,222 @@ public class Console {
 			{
 				return true;
 			}
+			else if (opcioni == preguntas.size())
+			{
+				System.out.println("Por favor digite el enunciado de su pregunta : ");
+				scanner.nextLine();
+				String enunciado = scanner.nextLine();
+				scanner.nextLine();
+				try
+				{
+					if (ACEscogida.getClass().getSimpleName().equals("Quiz")) {
+						
+						Quiz actividad = (Quiz) ACEscogida;
+						System.out.println("Usted eligio una actividad de tipo quiz");
+						
+						//ArrayList<Pregunta> preguntas = new ArrayList<Pregunta>();
+						//newActividad.setPreguntas(new ArrayList<Pregunta>());
+						ArrayList<Pregunta> preguntasi = actividad.getPreguntas();
+						
+						
+						int idPregunta = sistema.insertarPreguntaQuestionsAsToQuestionaries(actividad.getID());
+						
+						sistema.insertarQuestions(idPregunta, "opcionMultiple", enunciado);
+						System.out.println("Cuantas opciones desea añadir a su pregunta (Recuerde son maximo 4 opciones)");
+						int cantidadOpciones = scanner.nextInt();
+						while (cantidadOpciones > 4 || cantidadOpciones <2) {
+							System.out.println("Esa cantidad de opciones no es posible o no es suficiente");
+							cantidadOpciones = scanner.nextInt();
+							}
+						ArrayList<Opcion> opciones = new ArrayList<Opcion>();
+						boolean yaCorrecto = false;
+						for (int j = 1 ; j<=cantidadOpciones; j ++) {
+							System.out.println("OPCION ("+String.valueOf(j)+")");
+							if (j==cantidadOpciones && !yaCorrecto) {
+								System.out.printf("Esta es la ultima opcion, tiene que ser correcta pues ninguna de las anteriores lo es");
+										
+								}
+							System.out.println("Enunciado de la OPCION : ");
+							if (j== 1) {
+								scanner.nextLine();
+								}
+							String enunciadoOpcion = scanner.nextLine();
+							scanner.nextLine();
+							System.out.println("¿La opcion es correcta? Digite true o false (true: Sí, false : No)");
+							boolean correct = scanner.nextBoolean();
+							while (!correct && j==cantidadOpciones &&!yaCorrecto)
+								{
+									System.out.println("La opcion tiene que ser correcta");
+									System.out.println("OPCION ("+String.valueOf(j)+")");
+									System.out.println("Enunciado de la OPCION : ");
+									enunciadoOpcion = scanner.nextLine();
+									scanner.nextLine();
+									System.out.println("¿La opcion es correcta? Digite true o false (true: Sí, false : No)");
+									correct = scanner.nextBoolean();
+								}
+							while (correct && yaCorrecto)
+								{
+									System.out.println("Ya puso una opción correcta");
+									System.out.println("OPCION ("+String.valueOf(j)+")");
+									System.out.println("Enunciado de la OPCION : ");
+									enunciadoOpcion = scanner.nextLine();
+									scanner.nextLine();
+									System.out.println("¿La opcion es correcta? Digite true o false (true: Sí, false : No)");
+									correct = scanner.nextBoolean();
+								}
+							if (correct && !yaCorrecto) {
+								yaCorrecto = true;
+								} 
+							System.out.println("¿Por qué la opcion es correcta o incorrecta?");
+							scanner.nextLine();
+							String explicacion = scanner.nextLine();
+							scanner.nextLine();
+							int idOpcion = sistema.insertarOptionsAsToQuestions(idPregunta, enunciadoOpcion, explicacion, correct);
+							Opcion newOpcion	 = sistema.crearOpcionEscogidaPorUsuario(idOpcion);
+							opciones.add(newOpcion);
+						
+							
+								
+							
+							//AAAAAAAACB
+						}
+						PreguntaOpcionMultiple newPregunta = sistema.crearPreguntaOpcionMultiple(idPregunta, enunciado);
+						preguntasi.add(newPregunta);}
+				} catch (SQLException e)
+				{
+					System.out.println("Hubo algún error añadiendo la nueva pregunta");
+				}
+			}
 			else 
 			{
 				
 				
 				runMenuModificarPregunta(sistema, scanner, LP, quizEscogido, preguntas.get(opcioni));
+				
+				
+			}
+		}else if (opcion == 6 && ACEscogida.getClass().getSimpleName().equals("Examen"))
+		{
+			Examen examenEscogido = (Examen) ACEscogida;
+			ArrayList<Pregunta> preguntas = examenEscogido.getPreguntas();
+			for (int i = 0; i<preguntas.size();i++)
+			{
+				System.out.println("< "+String.valueOf(i)+" >  "+preguntas.get(i).getEnunciado() + " (ID: "+String.valueOf(preguntas.get(i).getID())+" )");
+			}
+			System.out.println("< "+String.valueOf(preguntas.size()) + " > Añadir una pregunta");
+			System.out.println("< "+String.valueOf(preguntas.size()+1)+" > Volver");
+			System.out.println("Por favor escoja una de las anteriores opciones : ");
+			System.out.println("Indice : ");
+			int opcioni = scanner.nextInt();
+			if (opcioni == preguntas.size()+1) 
+			{
+				return true;
+			}
+			else if (opcioni == preguntas.size())
+			{
+				try
+				{
+					Examen actividad = (Examen) ACEscogida;
+					sistema.borrarACEscogida(actividad, LP, false);
+					System.out.println("Usted eligio una actividad de tipo examen");
+				
+					//ArrayList<Pregunta> preguntas = new ArrayList<Pregunta>();
+					
+					ArrayList<Pregunta> preguntasi = actividad.getPreguntas();
+					
+					System.out.println("Por favor digite el enunciado de su pregunta : ");
+					scanner.nextLine();
+					String enunciado = scanner.nextLine();
+					scanner.nextLine();
+					int idPregunta = sistema.insertarPreguntaQuestionsAsToQuestionaries(actividad.getID());
+					sistema.insertarQuestions(idPregunta, "abierta", enunciado);
+					Pregunta pregunta = new Pregunta(enunciado, idPregunta);
+					preguntas.add(pregunta);
+					
+					actividad.setPreguntas(preguntas);
+					
+					ArrayList<Actividad> actividades = ((Profesor) sistema.getSession()).getActividadesCreadas();
+					actividades.add(actividad);
+					((Profesor) sistema.getSession()).setActividadesCreadas(actividades);
+					ArrayList<Actividad> activitiesLP = LP.getActivities();
+					activitiesLP.add(actividad);
+					LP.setActivities(activitiesLP);
+					HashMap<String, LearningPath> LPsCreados = sistema.getLPs();
+					LPsCreados.put(LP.getTitulo(), LP);
+				}
+				catch (SQLException e)
+				{
+					System.out.println("Hubo algún error creando la nueva pregunta para este examen");
+				}
+			}
+			else 
+			{
+				
+				
+				runMenuModificarPregunta(sistema, scanner, LP, examenEscogido, preguntas.get(opcioni));
+				
+				
+			}
+		}else if (opcion == 6 && ACEscogida.getClass().getSimpleName().equals("Encuesta"))
+		{
+			Encuesta encuestaEscogida = (Encuesta) ACEscogida;
+			ArrayList<Pregunta> preguntas = encuestaEscogida.getPreguntas();
+			for (int i = 0; i<preguntas.size();i++)
+			{
+				System.out.println("< "+String.valueOf(i)+" >  "+preguntas.get(i).getEnunciado() + " (ID: "+String.valueOf(preguntas.get(i).getID())+" )");
+			}
+			System.out.println("< "+String.valueOf(preguntas.size()) + " > Añadir una pregunta");
+			System.out.println("< "+String.valueOf(preguntas.size()+1)+" > Volver");
+			System.out.println("Por favor escoja una de las anteriores opciones : ");
+			System.out.println("Indice : ");
+			int opcioni = scanner.nextInt();
+			if (opcioni == preguntas.size()+1) 
+			{
+				
+				return true;
+			}
+			else if (opcioni == preguntas.size())
+			{
+				try
+				{
+					
+					sistema.borrarACEscogida(encuestaEscogida, LP, false);
+					System.out.println("Usted eligio una actividad de tipo examen");
+				
+					//ArrayList<Pregunta> preguntas = new ArrayList<Pregunta>();
+					
+					ArrayList<Pregunta> preguntasi = encuestaEscogida.getPreguntas();
+					
+					System.out.println("Por favor digite el enunciado de su pregunta : ");
+					scanner.nextLine();
+					String enunciado = scanner.nextLine();
+					scanner.nextLine();
+					int idPregunta = sistema.insertarPreguntaQuestionsAsToQuestionaries(encuestaEscogida.getID());
+					sistema.insertarQuestions(idPregunta, "abierta", enunciado);
+					Pregunta pregunta = new Pregunta(enunciado, idPregunta);
+					preguntas.add(pregunta);
+					
+					encuestaEscogida.setPreguntas(preguntas);
+					
+					ArrayList<Actividad> actividades = ((Profesor) sistema.getSession()).getActividadesCreadas();
+					actividades.add(encuestaEscogida);
+					((Profesor) sistema.getSession()).setActividadesCreadas(actividades);
+					ArrayList<Actividad> activitiesLP = LP.getActivities();
+					activitiesLP.add(encuestaEscogida);
+					LP.setActivities(activitiesLP);
+					HashMap<String, LearningPath> LPsCreados = sistema.getLPs();
+					LPsCreados.put(LP.getTitulo(), LP);
+				}
+				catch (SQLException e)
+				{
+					System.out.println("Hubo algún error creando la nueva pregunta para este examen");
+				}
+			}
+			else 
+			{
+				
+				
+				runMenuModificarPregunta(sistema, scanner, LP, encuestaEscogida, preguntas.get(opcioni));
 				
 				
 			}
@@ -1311,9 +1540,50 @@ public class Console {
 				if (opcioni == opciones.size()) {
 					return true;
 				}
-				else
+				else if (opcioni>=0 && opcioni<opciones.size())
 				{
+					Opcion opcionEscogida = opciones.get(opcioni);
+					try {
+						String message = sistema.eliminarOpcion(opcionEscogida, preguntai,actividad, LP);
+						System.out.println(message);
+						
+					} catch (SQLException e) {
+						System.out.println("Hubo algún error borrando la opción que escogio");
+						e.printStackTrace();
+					}
 					
+				}
+				System.out.println("______________________________________________");
+			}else if (opcion == 3)
+			{
+				PreguntaOpcionMultiple preguntai = (PreguntaOpcionMultiple) pregunta;
+				System.out.println("______________________________________________");
+				System.out.println("A continuación se le va a requerir de una cierta información para que inserte la nueva opcion");
+				System.out.println("Enunciado de la Opcion : ");
+				scanner.nextLine();
+				String enunciadoNewOpcion = scanner.nextLine();
+				scanner.nextLine();
+				System.out.println("¿La opcion es correcta? Digite true o false (true: Sí, false : No)");
+				boolean correct = scanner.nextBoolean();
+			
+				System.out.println("¿Por qué la opcion es correcta o incorrecta?");
+				scanner.nextLine();
+				String explicacion = scanner.nextLine();
+				scanner.nextLine();
+				System.out.println("Si digita que la opción que va a añadir es correcta se borrara la opción de la pregunta que era correcta");
+				System.out.println("¿Proseguir? (Sí, no)");
+				String respuesta = scanner.next().toLowerCase();
+				boolean R = false;
+				if (respuesta.equals("sí")||respuesta.equals("si"))
+				{
+					R = true;
+				}
+				
+				try {
+					String message = sistema.añadirOpcion(preguntai, enunciadoNewOpcion, correct, explicacion, R, actividad, LP);
+					System.out.println(message);
+				} catch (SQLException e) {
+					System.out.println("Hubo algún error añadiendo la opción a la pregunta");
 				}
 				System.out.println("______________________________________________");
 			}
@@ -1324,10 +1594,66 @@ public class Console {
 		{
 			System.out.println("[2] Salir");
 			Examen examen = (Examen) actividad;
+			int opcion = scanner.nextInt();
+			if (opcion == 2)
+			{
+				return false;
+			}
+			else if (opcion == 0)
+			{
+				try {
+					boolean result = sistema.eliminarPregunta(LP, actividad, pregunta, true);
+					if (result == false) {
+						System.out.println("No se puede eleminar esa pregunta");
+					}
+				} catch (SQLException e) {
+					System.out.println("Hubo algun error borrando la pregunta");
+					e.printStackTrace();
+				}
+			}else if (opcion == 1)
+			{
+				System.out.println("Por favor digite el nuevo enunciado de su pregunta");
+				scanner.nextLine();
+				String newEnunciado = scanner.nextLine();
+				scanner.nextLine();
+				try {
+					sistema.modificarEnunciadoPregunta(pregunta.getID(), newEnunciado, LP, actividad);
+				} catch (SQLException e) {
+					System.out.println("Hubo algún error intentando modificar el enunciado de su pregunta");
+				}
+			}
 		}else if (actividad.getClass().getSimpleName().equals("Encuesta"))
 		{
 			System.out.println("[2] Salir");
 			Encuesta encuesta = (Encuesta) actividad;
+			int opcion = scanner.nextInt();
+			if (opcion == 2)
+			{
+				return false;
+			}
+			else if (opcion == 0)
+			{
+				try {
+					boolean result = sistema.eliminarPregunta(LP, actividad, pregunta, true);
+					if (result == false) {
+						System.out.println("No se puede eleminar esa pregunta");
+					}
+				} catch (SQLException e) {
+					System.out.println("Hubo algun error borrando la pregunta");
+					e.printStackTrace();
+				}
+			}else if (opcion == 1)
+			{
+				System.out.println("Por favor digite el nuevo enunciado de su pregunta");
+				scanner.nextLine();
+				String newEnunciado = scanner.nextLine();
+				scanner.nextLine();
+				try {
+					sistema.modificarEnunciadoPregunta(pregunta.getID(), newEnunciado, LP, actividad);
+				} catch (SQLException e) {
+					System.out.println("Hubo algún error intentando modificar el enunciado de su pregunta");
+				}
+			}
 		}
 		
 		System.out.println("_______________________________________________________");
