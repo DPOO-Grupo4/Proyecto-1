@@ -1,11 +1,11 @@
 ----------------------------------------------------------------
-Sat Nov 16 16:14:57 COT 2024:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.17.1.0 - (1913217): instance a816c00e-0193-36d4-346d-00000f2f4c18 
-on database directory C:\Users\juanj\git\proyecto1DPOO\proyecto1Implementacion\DataBase with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@51521cc1 
-Loaded from file:/C:/Users/juanj/git/proyecto1DPOO/proyecto1Implementacion/derbyJars/derby.jar
-java.vendor=Eclipse Adoptium
-java.runtime.version=22.0.2+9
-user.dir=C:\Users\juanj\git\proyecto1DPOO\proyecto1Implementacion
+Sat Nov 16 20:38:17 COT 2024:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.17.1.0 - (1913217): instance a816c00e-0193-37c5-4c50-000007382d48 
+on database directory C:\Users\Aleja\Downloads\Proyecto-1\proyecto1Implementacion\DataBase with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@5c647e05 
+Loaded from file:/C:/Users/Aleja/Downloads/Proyecto-1/proyecto1Implementacion/derbyJars/derby.jar
+java.vendor=Oracle Corporation
+java.runtime.version=22.0.1+8-16
+user.dir=C:\Users\Aleja\Downloads\Proyecto-1\proyecto1Implementacion
 os.name=Windows 11
 os.arch=amd64
 os.version=10.0
