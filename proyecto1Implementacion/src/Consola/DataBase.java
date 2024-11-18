@@ -9,12 +9,11 @@ import java.sql.Statement;
 public class DataBase {
 
 	public static void main(String[] args) {
-		String url = "jdbc:derby:DataBase;create=true";
+		String url = "jdbc:derby:DataBasePrueba;create=true";
 		try {
 			Connection connection = DriverManager.getConnection(url);
 			System.out.println("La base de datos ha sido creada con exito");
 			Statement statement = connection.createStatement();
-			
 			
 			
 			
