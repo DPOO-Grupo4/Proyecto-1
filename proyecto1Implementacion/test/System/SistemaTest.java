@@ -989,7 +989,7 @@ public class SistemaTest {
 			sistema.insertarCreatedActivities(id, newLP.getTitulo());
 			ArrayList<Pregunta> listaF=sistema.getPreguntasActividad(id);
 			assertTrue(sistema.eliminarPregunta(newLP, quiz1, pregunta1, true), "No se elimino la pregunta correctamente");
-			assertTrue(sistema.eliminarPregunta(newLP, quiz1, pregunta2, true), "No se elimino la pregunta correctamente");
+			assertTrue(sistema.eliminarPregunta(newLP, quiz1, pregunta2, true), "No");
 			
 			
 			} 
