@@ -1,19 +1,6 @@
 ----------------------------------------------------------------
-Sun Nov 17 22:57:24 COT 2024:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.17.1.0 - (1913217): instance a816c00e-0193-3d6b-04d9-00000f211280 
-on database directory C:\Users\juanj\git\proyecto1DPOO\proyecto1Implementacion\DataBase with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@51521cc1 
-Loaded from file:/C:/Users/juanj/git/proyecto1DPOO/proyecto1Implementacion/derbyJars/derby.jar
-java.vendor=Eclipse Adoptium
-java.runtime.version=22.0.2+9
-user.dir=C:\Users\juanj\git\proyecto1DPOO\proyecto1Implementacion
-os.name=Windows 11
-os.arch=amd64
-os.version=10.0
-derby.system.home=null
-Database Class Loader started - derby.database.classpath=''
-----------------------------------------------------------------
-Sun Nov 17 22:57:27 COT 2024:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.17.1.0 - (1913217): instance 35f45c1f-0193-3d6b-04d9-00000f211280 
+Mon Nov 18 22:28:14 COT 2024:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.17.1.0 - (1913217): instance a816c00e-0193-4276-ad2a-00000f6293d0 
 on database directory C:\Users\juanj\git\proyecto1DPOO\proyecto1Implementacion\DataBasePrueba with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@51521cc1 
 Loaded from file:/C:/Users/juanj/git/proyecto1DPOO/proyecto1Implementacion/derbyJars/derby.jar
 java.vendor=Eclipse Adoptium

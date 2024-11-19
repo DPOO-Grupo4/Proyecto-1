@@ -68,8 +68,43 @@ public class SistemaTest {
 	void tearDown() throws Exception {
 		
 		Statement statement = this.sistema.getConnection().createStatement();
-		statement.executeUpdate("DELETE FROM USERS WHERE login = 'vale'");	
-		statement.executeUpdate("DELETE FROM USERS WHERE login = 'juan'");
+		//statement.executeUpdate("DELETE FROM USERS WHERE login = 'vale'");	
+		//statement.executeUpdate("DELETE FROM USERS WHERE login = 'juan'");
+		statement.executeUpdate("DROP TABLE answersActivity");
+		statement.executeUpdate("DROP TABLE optionsAsToQuestions");
+		statement.executeUpdate("DROP TABLE questions");
+		statement.executeUpdate("DROP TABLE QuestionsAsToQuestionaries");
+		statement.executeUpdate("DROP TABLE reseñas");
+		statement.executeUpdate("DROP TABLE inscribedActivities");
+		statement.executeUpdate("DROP TABLE createdActivities");
+		statement.executeUpdate("DROP TABLE activities");
+		statement.executeUpdate("DROP TABLE CreatedLearningPaths");
+		statement.executeUpdate("DROP TABLE learningPaths");
+		statement.executeUpdate("DROP TABLE USERS");
+		
+		statement.executeUpdate("CREATE TABLE USERS (login varchar(60) PRIMARY KEY NOT NULL, password varchar(40), correo varchar(255), tipo varchar(10))");
+		statement.executeUpdate("CREATE TABLE learningPaths (nameLP varchar(100) PRIMARY KEY NOT NULL, creator varchar(60), description varchar(400), difficulty varchar(10), duration int, rating int, creationdate timestamp, moddate timestamp, FOREIGN KEY (creator) REFERENCES USERS(login))");
+		statement.executeUpdate("CREATE TABLE CreatedLearningPaths (id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, login varchar(60), nameLP varchar(100), FOREIGN KEY (login) REFERENCES USERS(login), FOREIGN KEY (nameLP) REFERENCES learningPaths(nameLP))");
+		statement.executeUpdate("CREATE TABLE activities (id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, creator varchar(60), mandatory boolean,description varchar(400), difficulty varchar(10), duration int, "
+				+ "dateLimit timestamp,type varchar(8),documentPath varchar(600), comment varchar(1000), calificacionMinima int, FOREIGN KEY (creator) REFERENCES USERS(login))");
+		statement.executeUpdate("CREATE TABLE createdActivities (id int PRIMARY KEY, nameLPAssociated varchar(100),FOREIGN KEY (id) REFERENCES activities(id) , FOREIGN KEY (nameLPAssociated) REFERENCES learningPaths(nameLP))");
+		
+		statement.executeUpdate("CREATE TABLE inscribedActivities (num int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, login varchar(60), idActivity int, state varchar(500),FOREIGN KEY (login) REFERENCES USERS(login), FOREIGN KEY (idActivity) REFERENCES activities(id))");
+		
+		statement.executeUpdate("CREATE TABLE questionsAsToQuestionaries(idPregunta int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, idActividad int , FOREIGN KEY (idActividad) REFERENCES activities(id))");
+		
+		statement.executeUpdate("CREATE TABLE questions (idPregunta int PRIMARY KEY, FOREIGN KEY (idPregunta) REFERENCES questionsAsToQuestionaries(idpregunta), typeQ varchar(14), \"statement\" varchar(1000))");
+		
+		statement.executeUpdate("CREATE TABLE optionsAsToQuestions(idOpcion int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, idPregunta int,FOREIGN KEY (idpregunta) REFERENCES questions(idPregunta), explicacion varchar(1000), enunciado varchar(1000), correct boolean)");
+		
+		statement.executeUpdate("CREATE TABLE answersActivity (num int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, idPregunta int, idOpcion int, FOREIGN KEY (idOpcion) REFERENCES optionsAsToQuestions(idOpcion), usuario varchar(60), FOREIGN KEY (usuario) REFERENCES USERS(login),respuesta varchar(1000), FOREIGN KEY (idPregunta) REFERENCES questions(idPregunta))");
+		
+		statement.executeUpdate("CREATE TABLE reseñas (num int GENERATED ALWAYS AS IDENTITY PRIMARY KEY, idActividad int, login varchar(60), reseña varchar(1000), FOREIGN KEY (idActividad) REFERENCES activities(id), FOREIGN KEY (login) REFERENCES USERS(login))");
+		
+		
+		
+		this.sistema.getConnection().commit();
+		statement.close();
 		this.sistema = null;
 		this.estudiante1 = null;
 		this.profesor1 = null;
@@ -536,9 +571,9 @@ public class SistemaTest {
 		void testGetLpsInscritos() {
 			
 			//Given
-			String login1 = "natalia";
+			String login1 = "danti";
 			String password1 = "1234";
-			String correo1 = "natalia@gmail.com";
+			String correo1 = "dante@gmail.com";
 			String tipo1 = "estudiante";
 			boolean bool1 = true;
 			
@@ -563,7 +598,10 @@ public class SistemaTest {
 				
 				assertEquals(newLP,lista.getFirst());
 				Statement statement = this.sistema.getConnection().createStatement();
-				statement.executeUpdate("DELETE FROM USERS WHERE login = 'natalia'");	
+				statement.executeUpdate("DELETE FROM CreatedLearningPaths WHERE login = 'danti'");
+				statement.executeUpdate("DELETE FROM USERS WHERE login = 'danti'");	
+				statement.executeUpdate("DELETE FROM LEARNINGPATHS WHERE nameLP = 'SQL 101'");
+				
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
