@@ -12,7 +12,7 @@ public class Estudiante extends Usuario{
 	public Estudiante(String login, String password,String correo, ArrayList<LearningPath> lpsInscritos) {
 		super(login, password, correo);
 		this.learningPathsInscritos = lpsInscritos;
-		
+	
 	}
 	public ArrayList<LearningPath> getLPsInscritos(){
 		return this.learningPathsInscritos;

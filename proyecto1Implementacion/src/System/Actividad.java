@@ -50,6 +50,9 @@ public class Actividad {
 	public HashMap<String, String[]> getState(){
 		return this.state;
 	}
+	public boolean getMandatory (){
+		return mandatory;
+	}
 	public void setState(HashMap<String, String[]> state) {
 		this.state = state;
 	}

@@ -43,7 +43,24 @@ public class Sistema {
 		}
 	
 	}
+	public Sistema(String prueba) {
+		this.estudiantes = new HashMap<String, Estudiante>();
+		this.profesores = new HashMap<String, Profesor>();
+		this.learningPathsCreados = new HashMap<String, LearningPath>();
+		this.actividades = new HashMap<Integer, Actividad>();
+		String url = "jdbc:derby:DataBase" +prueba+ ";create=true";
+		try {
+			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+			this.connection = DriverManager.getConnection(url);
+		} catch (SQLException e) {
+			
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 	
+	}
 	
 	public void cargarSistema() {
 		try {
@@ -567,7 +584,7 @@ public class Sistema {
 		return "Su usuario o contraseña son erróneos";
 	}
 	
-	private Connection getConnection() {
+	public Connection getConnection() {
 		return this.connection;
 	}
 	public Usuario getSession() {
