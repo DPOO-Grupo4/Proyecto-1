@@ -80,6 +80,23 @@ public class PLearningPathsInscritos extends JFrame {
 				public void actionPerformed(ActionEvent e) {
 					int opcion = list.getSelectedIndex();
 					LearningPath LPEscogido = LPsInscritos.get(opcion);
+					boolean aprobado = sistema.verificarEstadoLP(sistema.getSession(), LPEscogido);
+					if (aprobado)
+					{
+						JOptionPane.showMessageDialog(null, "¡Felicidades! completaste el learning path"
+								+ "\n Vuelve en un tiempo cuando tengas la certeza de que el profesor evaluó todas las actividades " );
+						
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(null, "Este learning path no esta acabado o esta reprobado"
+								+ "\n Nota: Si ya completo todas las actividades obligatorias y el profesor calificó, probablemente entregó algo tarde " );
+						
+					}
+					PMostrarLP PMLP = new PMostrarLP(sistema, LPEscogido);
+					PMLP.setVisible(true);
+					dispose();
+					
 				}
 			});
 			
