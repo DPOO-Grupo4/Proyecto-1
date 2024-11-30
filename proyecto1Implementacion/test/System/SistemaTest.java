@@ -395,9 +395,9 @@ public class SistemaTest {
 		LocalTime time= LocalTime.of(10, 10, 10);
 		LocalDateTime FechaLimiteNueva = LocalDateTime.of(date, time);
 		try {
-			LearningPath LP=  new LearningPath("Camilo4", "Programación en Java4", "Curso de programacion en Java4", "Intermedio", 7, 5, LocalDateTime.now() , LocalDateTime.now(), sistema );
+			LearningPath LP=  new LearningPath("juan", "Programación en Java4", "Curso de programacion en Java4", "principiante", 7, 5, LocalDateTime.now() , LocalDateTime.now(), sistema );
 			sistema.modificarFechaLímiteActividad(actividad, LP, FechaLimiteNueva);
-			assertEquals(FechaLimiteNueva, actividad.getDuration());
+			assertEquals(FechaLimiteNueva, actividad.getDateLimit());
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -471,7 +471,7 @@ public class SistemaTest {
 		String creador = "juan";
 		String titulo = "Python 101";
 		String descripcionGeneral = "Un curso diseñado para principiantes en Python.";
-		String difficulty = "facil";
+		String difficulty = "principiante";
 		int duration = 100;
 		int rating = 5;
 		LocalDateTime fechaCreacion = LocalDateTime.now();
@@ -544,7 +544,7 @@ public class SistemaTest {
 		String creador = "juan";
 		String titulo = "Java 101";
 		String descripcionGeneral = "Un curso diseñado para principiantes en Java.";
-		String difficulty = "facil";
+		String difficulty = "principiante";
 		int duration = 100;
 		int rating = 5;
 		LocalDateTime fechaCreacion = LocalDateTime.now();
@@ -565,50 +565,49 @@ public class SistemaTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-		
+	}	
 	@Test
-		void testGetLpsInscritos() {
-			
-			//Given
-			String login1 = "danti";
-			String password1 = "1234";
-			String correo1 = "dante@gmail.com";
-			String tipo1 = "estudiante";
-			boolean bool1 = true;
-			
-			
-			String creador = "juan";
-			String titulo = "SQL 101";
-			String descripcionGeneral = "Un curso diseñado para principiantes en SQL.";
-			String difficulty = "facil";
-			int duration = 100;
-			int rating = 5;
-			LocalDateTime fechaCreacion = LocalDateTime.now();
-			LocalDateTime fechaModificacion = LocalDateTime.now();
-			boolean nuevo = true;
-			
-			//When
-			
-			try {
-				Estudiante estudiante = (Estudiante) sistema.crearUsuario(login1, password1, correo1, tipo1, bool1);
-				LearningPath newLP = sistema.crearLearningPath(creador, titulo, descripcionGeneral, difficulty, duration, rating, fechaCreacion, fechaModificacion, nuevo);
-				sistema.inscribirLP(newLP, estudiante);
-				ArrayList<LearningPath> lista = sistema.getLPsInscritos(estudiante.getLogin());
-				
-				assertEquals(newLP,lista.getFirst());
-				Statement statement = this.sistema.getConnection().createStatement();
-				statement.executeUpdate("DELETE FROM CreatedLearningPaths WHERE login = 'danti'");
-				statement.executeUpdate("DELETE FROM USERS WHERE login = 'danti'");	
-				statement.executeUpdate("DELETE FROM LEARNINGPATHS WHERE nameLP = 'SQL 101'");
-				
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+	void testGetLpsInscritos() {
 		
-	}
+		//Given
+		String login1 = "danti";
+		String password1 = "1234";
+		String correo1 = "dante@gmail.com";
+		String tipo1 = "estudiante";
+		boolean bool1 = true;
+		
+		
+		String creador = "juan";
+		String titulo = "SQL 101";
+		String descripcionGeneral = "Un curso diseñado para principiantes en SQL.";
+		String difficulty = "principiante";
+		int duration = 100;
+		int rating = 5;
+		LocalDateTime fechaCreacion = LocalDateTime.now();
+		LocalDateTime fechaModificacion = LocalDateTime.now();
+		boolean nuevo = true;
+		
+		//When
+		
+		try {
+			Estudiante estudiante = (Estudiante) sistema.crearUsuario(login1, password1, correo1, tipo1, bool1);
+			LearningPath newLP = sistema.crearLearningPath(creador, titulo, descripcionGeneral, difficulty, duration, rating, fechaCreacion, fechaModificacion, nuevo);
+			sistema.inscribirLP(newLP, estudiante);
+			ArrayList<LearningPath> lista = sistema.getLPsInscritos(estudiante.getLogin());
+			
+			assertEquals(newLP,lista.getFirst());
+			Statement statement = this.sistema.getConnection().createStatement();
+			statement.executeUpdate("DELETE FROM CreatedLearningPaths WHERE login = 'danti'");
+			statement.executeUpdate("DELETE FROM USERS WHERE login = 'danti'");	
+			statement.executeUpdate("DELETE FROM LEARNINGPATHS WHERE nameLP = 'SQL 101'");
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	
+}
 	
 	@Test
 	
@@ -870,7 +869,7 @@ public class SistemaTest {
 		String creador = "juan";
 		String titulo = "C++ 101";
 		String descripcionGeneral = "Un curso diseñado para principiantes en C++.";
-		String difficulty = "facil";
+		String difficulty = "principiante";
 		int duration = 100;
 		int rating = 5;
 		LocalDateTime fechaCreacion = LocalDateTime.now();

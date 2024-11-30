@@ -62,17 +62,17 @@ public class PMostrarLP extends JFrame {
 		layeredPane.add(btnNewButton_1);
 		
 		JLabel lblNewLabel = new JLabel("Título : "+LPEscogido.getTitulo());
-		lblNewLabel.setBounds(251, 52, 60, 31);
+		lblNewLabel.setBounds(251, 52, 244, 31);
 		layeredPane.add(lblNewLabel);
 		
 		JPanel panel = new JPanel();
 		panel.setBorder(new TitledBorder(null, "Descripción : ", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel.setBounds(245, 78, 147, 52);
+		panel.setBounds(245, 78, 250, 124);
 		layeredPane.add(panel);
 		panel.setLayout(null);
 		
 		JLabel lblNewLabel_1 = new JLabel(LPEscogido.getDescripcion());
-		lblNewLabel_1.setBounds(6, 15, 52, 13);
+		lblNewLabel_1.setBounds(6, 15, 234, 99);
 		panel.add(lblNewLabel_1);
 		
 		
