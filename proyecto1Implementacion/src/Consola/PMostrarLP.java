@@ -75,6 +75,10 @@ public class PMostrarLP extends JFrame {
 		lblNewLabel_1.setBounds(6, 15, 234, 99);
 		panel.add(lblNewLabel_1);
 		
+		JButton btnNewButton = new JButton("avance");
+		btnNewButton.setBounds(251, 265, 85, 21);
+		layeredPane.add(btnNewButton);
+		
 		
 		
 	}
