@@ -1003,6 +1003,7 @@ public class Console {
 					
 				}else if(opcioni == preguntas.size()) {
 					sistema.actualizarEstado(estudiante, quiz, state.get(estudiante.getLogin())[0], state.get(estudiante.getLogin())[1], false, true);
+					System.out.println("reprobado con exito");
 				}
 				
 				else {
