@@ -62,8 +62,8 @@ public class PInicioEstudiante extends JFrame {
 		JButton btnNewButton = new JButton("Inscribir LearningPath");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				InicioSesion pantalla1 = new InicioSesion(sistema);
-				pantalla1.setVisible(true);
+				PInscribirLearningPath PILP = new PInscribirLearningPath(sistema);
+				PILP.setVisible(true);
 				dispose();
 			}
 		});

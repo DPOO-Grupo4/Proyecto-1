@@ -762,7 +762,7 @@ public class Sistema {
 			statement.execute("UPDATE answersActivity SET respuesta = '"+respuesta+"' WHERE idPregunta = "+String.valueOf(idPregunta)+"AND usuario = '"+usuario.getLogin()+"'");
 		}
 	}
-	public void inscribirLP(LearningPath LP, Estudiante estudiante) throws SQLException { //Esto esta sujeto a cambios, la aplicacion no contempla por ahora que un profesor pueda inscribir un learningpath
+	public boolean inscribirLP(LearningPath LP, Estudiante estudiante) throws SQLException { //Esto esta sujeto a cambios, la aplicacion no contempla por ahora que un profesor pueda inscribir un learningpath
 		Statement statement = this.connection.createStatement();
 		ArrayList<LearningPath> LPsInscritos = estudiante.getLPsInscritos();
 		HashMap<String, Boolean> yaInscritos = new HashMap<String,Boolean>();
@@ -773,6 +773,10 @@ public class Sistema {
 			statement.executeUpdate("INSERT INTO CreatedLearningPaths (login, nameLP) VALUES ('"+estudiante.getLogin()+"','"+LP.getTitulo()+"')");
 			LPsInscritos.add(LP);
 			estudiante.setLPsInscritos(LPsInscritos);
+			return true;
+			
+		}else {
+			return false;
 		}
 		
 		

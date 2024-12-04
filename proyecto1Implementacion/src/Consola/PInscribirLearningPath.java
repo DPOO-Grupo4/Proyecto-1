@@ -8,6 +8,7 @@ import javax.swing.border.EmptyBorder;
 
 import System.LearningPath;
 import System.Sistema;
+import Usuarios.Estudiante;
 
 import javax.swing.JLabel;
 import javax.swing.JButton;
@@ -18,6 +19,7 @@ import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.awt.event.ActionEvent;
 import javax.swing.BoxLayout;
 import javax.swing.JList;
@@ -26,7 +28,7 @@ import javax.swing.JScrollPane;
 import java.awt.List;
 import java.awt.Label;
 
-public class PLearningPathsInscritos extends JFrame {
+public class PInscribirLearningPath extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
@@ -36,7 +38,7 @@ public class PLearningPathsInscritos extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public PLearningPathsInscritos(Sistema sistema) {
+	public PInscribirLearningPath(Sistema sistema) {
 		
 		
 		
@@ -73,29 +75,30 @@ public class PLearningPathsInscritos extends JFrame {
 		ArrayList<LearningPath> LPsInscritos;
 		try {
 			LPsInscritos = sistema.getLPsInscritos(sistema.getSession().getLogin());
-			for (int i=0; i < LPsInscritos.size(); i++) {
-				list.add(LPsInscritos.get(i).getTitulo(), i);
+			HashMap<String, LearningPath> learningPaths = sistema.getLPs();
+			ArrayList<String> titulosLPs = new ArrayList<>();
+			for (int i = 0; i < learningPaths.size(); i ++) {
+				list.add("["+String.valueOf(i)+"] " + (new ArrayList<LearningPath> (learningPaths.values())).get(i).getTitulo(),i);
+				titulosLPs.add( (new ArrayList<LearningPath> (learningPaths.values())).get(i).getTitulo());
 			}
+			
 			list.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int opcion = list.getSelectedIndex();
-					LearningPath LPEscogido = LPsInscritos.get(opcion);
-					boolean aprobado = sistema.verificarEstadoLP(sistema.getSession(), LPEscogido);
-					if (aprobado)
-					{
-						JOptionPane.showMessageDialog(null, "¡Felicidades! completaste el learning path"
-								+ "\n Vuelve en un tiempo cuando tengas la certeza de que el profesor evaluó todas las actividades " );
-						
+					try {
+						boolean success = sistema.inscribirLP(learningPaths.get(titulosLPs.get(opcion)),(Estudiante) sistema.getSession());
+						if (success) {
+							JOptionPane.showMessageDialog(null, "¡El learning path fue inscrito exitosamente!");
+							
+						}else
+						{
+							JOptionPane.showMessageDialog(null, "¡Oops! Ese learning path ya lo inscribiste");
+						}
+					} catch (SQLException e1) {
+						JOptionPane.showMessageDialog(null, "¡Oops! Ocurrio algún error inscribiendo este Learning Path");
 					}
-					else
-					{
-						JOptionPane.showMessageDialog(null, "Este learning path no esta acabado o esta reprobado"
-								+ "\n Nota: Si ya completo todas las actividades obligatorias y el profesor calificó, probablemente entregó algo tarde " );
-						
-					}
-					PMostrarLP PMLP = new PMostrarLP(sistema, LPEscogido);
-					PMLP.setVisible(true);
-					dispose();
+					
+					
 					
 				}
 			});
@@ -109,3 +112,4 @@ public class PLearningPathsInscritos extends JFrame {
 	}
 	
 }
+

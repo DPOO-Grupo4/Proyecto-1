@@ -76,6 +76,9 @@ public class Inicio extends JFrame {
 		layeredPane.add(btnNewButton);
 		Registrarse.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				PRegistrarse registrarse = new PRegistrarse(sistema);
+				registrarse.setVisible(true);
+				dispose();
 			}
 		});
 	}
