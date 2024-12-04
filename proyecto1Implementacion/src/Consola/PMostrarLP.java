@@ -66,7 +66,7 @@ public class PMostrarLP extends JFrame {
 				dispose();
 			}
 		});
-		btnNewButton_1.setBounds(251, 296, 85, 21);
+		btnNewButton_1.setBounds(232, 296, 120, 21);
 		layeredPane.add(btnNewButton_1);
 		
 		JTextArea textArea = new JTextArea();

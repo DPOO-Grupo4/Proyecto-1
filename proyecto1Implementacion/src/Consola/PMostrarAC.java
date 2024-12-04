@@ -76,7 +76,7 @@ public class PMostrarAC extends JFrame {
 				dispose();
 			}
 		});
-		btnNewButton_1.setBounds(251, 296, 85, 21);
+		btnNewButton_1.setBounds(229, 296, 132, 21);
 		layeredPane.add(btnNewButton_1);
 		
 		JTextArea textArea = new JTextArea();
@@ -122,6 +122,21 @@ public class PMostrarAC extends JFrame {
         layeredPane.add(lblNewLabel_3);
         
         JButton btnNewButton_2 = new JButton("Publicar reseña");
+        btnNewButton_2.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		 String reseña = JOptionPane.showInputDialog(null, "Por favor, ingresa la reseña que deseas publicar : ", "Reseña", JOptionPane.QUESTION_MESSAGE);
+        		 if (reseña != null) {
+        			 try {
+						sistema.insertarReseñas(ACEscogida.getID(), sistema.getSession().getLogin(), reseña);
+						JOptionPane.showMessageDialog(null, "Su reseña fue enviada al profesor con exito");
+        			 } catch (SQLException e1) {
+						JOptionPane.showMessageDialog(null, "¡Oops! Ocurrio algún error");
+					}
+                 } else {
+                     JOptionPane.showMessageDialog(null, "No aceptamos reseñas vacías.");
+                 }
+        	}
+        });
         btnNewButton_2.setBounds(229, 327, 132, 40);
         layeredPane.add(btnNewButton_2);
         
@@ -134,57 +149,88 @@ public class PMostrarAC extends JFrame {
         			PMostrarPreguntaOM empezar = new PMostrarPreguntaOM(sistema, actividad, LPEscogido, 0, preguntas, 0);
         			empezar.setVisible(true);
         			dispose();
-        			
-        			/*
+        		
+        		}else if (ACEscogida.getClass().getSimpleName().equals("Examen")) {
+        			Examen actividad = (Examen) ACEscogida;
+        			ArrayList<Pregunta> preguntas = actividad.getPreguntas();
+        			PMostrarPreguntaAB empezar = new PMostrarPreguntaAB(sistema, actividad, LPEscogido, 0, preguntas);
+        			empezar.setVisible(true);
+        			dispose();
+        		
+        		}else if (ACEscogida.getClass().getSimpleName().equals("Encuesta")) {
+        			Encuesta actividad = (Encuesta) ACEscogida;
+        			ArrayList<Pregunta> preguntas = actividad.getPreguntas();
+        			PMostrarPreguntaAB empezar = new PMostrarPreguntaAB(sistema, actividad, LPEscogido, 0, preguntas);
+        			empezar.setVisible(true);
+        			dispose();
+        		
+        		}else if (ACEscogida.getClass().getSimpleName().equals("Tarea")) {
+        			Tarea tarea  = (Tarea) ACEscogida;
+        			HashMap<String, String[]> state = tarea.getState();
+        			if (!state.containsKey(sistema.getSession().getLogin())) {
+        				state.put(sistema.getSession().getLogin(), new String[3]);
+        				try {
+							sistema.actualizarEstado(sistema.getSession(), tarea, LocalDateTime.now().toString() , "NULL", false, false);
+        				} catch (SQLException e1) {
+        					JOptionPane.showMessageDialog(null, "¡Oops! Ocurrio algun problema inicializando la actividad");
+							
+						}
+        				
+        			}
+        			int answer = JOptionPane.showConfirmDialog(null, "Tarea : "+ tarea.getComentario() + "\n"
+        					+ "¿Desea dar por completada esta actividad?\n Recuerde que si no la completa antes"
+        					+ "de la fecha límite es contada como reprobada");
+        			System.out.println(String.valueOf(answer));
+        			if (answer == 0) {
+        				try {
+							sistema.actualizarEstado(sistema.getSession(), tarea, state.get(sistema.getSession().getLogin())[0],LocalDateTime.now().toString() ,true, false);
+							PMostrarAC PMAC = new PMostrarAC(sistema, ACEscogida, LPEscogido);
+							PMAC.setVisible(true);
+							dispose();
+        				} catch (SQLException e1) {
+						
+							JOptionPane.showMessageDialog(null, "¡Oops! Ocurrio algún error");
+						}
+        			}
+        		
+        		}else if (ACEscogida.getClass().getSimpleName().equals("ActividadRecurso")) {
         			HashMap<String, String[]> state = ACEscogida.getState();
         			if (!state.containsKey(sistema.getSession().getLogin())) {
         				state.put(sistema.getSession().getLogin(), new String[3]);
-        				sistema.actualizarEstado(sistema.getSession(), ACEscogida, LocalDateTime.now().toString() , "", false, false);
+        				try {
+							sistema.actualizarEstado(sistema.getSession(), ACEscogida, LocalDateTime.now().toString() , "NULL", false, false);
+						
+        				} catch (SQLException e1) {
+							
+							JOptionPane.showMessageDialog(null, "¡Oops! Ocurrio algún error");
+						}
         			}
-        			Quiz actividad = (Quiz) ACEscogida;
-        			ArrayList<Pregunta> preguntas = actividad.getPreguntas();
-        			int respuestasBuenas = 0;
+        			try {
+						sistema.actualizarEstado(sistema.getSession(), ACEscogida, LocalDateTime.now().toString(),"NULL" ,false, false);
+						ActividadRecurso actividadRecurso = (ActividadRecurso) ACEscogida;
+						
+						JTextArea textArea = new JTextArea("Recurso : " + actividadRecurso.getDocumentPath());
+			            textArea.setEditable(false); 
+			            textArea.setLineWrap(true);
+			            textArea.setWrapStyleWord(true); 
+
+			           
+			            JScrollPane scrollPane = new JScrollPane(textArea);
+			            scrollPane.setPreferredSize(new java.awt.Dimension(300, 150));
+
+			            
+			            JOptionPane.showMessageDialog(null, scrollPane, "Texto no editable", JOptionPane.INFORMATION_MESSAGE);
+						
+						
+						sistema.actualizarEstado(sistema.getSession(), ACEscogida, state.get(sistema.getSession().getLogin())[0],LocalDateTime.now().toString() ,true, false);
+						PMostrarAC PMAC = new PMostrarAC(sistema, ACEscogida, LPEscogido);
+						PMAC.setVisible(true);
+						dispose();
         			
-        			for (int i =1 ; i <= preguntas.size(); i++) {
-        				System.out.println("Pregunta "+String.valueOf(i)+":");
-        				PreguntaOpcionMultiple pregunta= (PreguntaOpcionMultiple) preguntas.get(i-1);
-        				System.out.println(pregunta.getEnunciado());
-        				ArrayList<Opcion> opciones = pregunta.getOpciones();
-        				for (int j = 1; j<=opciones.size(); j++) {
-        					System.out.println("Opcion " + String.valueOf(j));
-        					Opcion opcioni = opciones.get(j-1);
-        					System.out.println(opcioni.getEnunciado());
-        				}
-        				System.out.println("Seleccione la opcion que considere correcta :");
-        				int respuestaUsuario = scanner.nextInt() -1;
-        				while (respuestaUsuario<0 || respuestaUsuario>opciones.size()-1)
-        				{
-        					System.out.println("La opción que selecciono no existe");
-        					System.out.println("Por favor digite una opción que sí sea valida");
-        					respuestaUsuario = scanner.nextInt()-1;
-        				}
-        				//sistema.insertarAnswersActiyity();
-        				sistema.actualizarRespuestaUsuario(sistema.getSession(), pregunta.getID(), String.valueOf(opciones.get(respuestaUsuario).getID()), "NULL", false);
-        				if (opciones.get(respuestaUsuario).getCorrect()) {
-        					respuestasBuenas+=1;
-        					System.out.println("-----------------------------------------------");
-        					System.out.println("¡Wow! Tu respuesta fue correcta porque ...");
-        					System.out.println(opciones.get(respuestaUsuario).getExplicacion());
-        					System.out.println("-----------------------------------------------");
-        				}else {
-        					System.out.println("-----------------------------------------------");
-        					System.out.println("¡oops! Tu respuesta fue incorrecta porque ...");
-        					System.out.println(opciones.get(respuestaUsuario).getExplicacion());
-        					System.out.println("-----------------------------------------------");
-        				}
-        				
-        			}
-        			if (respuestasBuenas >= actividad.getCalificacionMinima()) {
-        				System.out.println("Ha aprobado la actividad");
-        				sistema.actualizarEstado(sistema.getSession(), ACEscogida,state.get(sistema.getSession().getLogin())[0],LocalDateTime.now().toString(), true, true );
-        				
-        			}*/
-        			
+        			} catch (SQLException e1) {
+        				JOptionPane.showMessageDialog(null, "¡Oops! Ocurrio algún error");
+					}
+        			ActividadRecurso actividadRecurso = (ActividadRecurso) ACEscogida;
         		}
         	}
         });

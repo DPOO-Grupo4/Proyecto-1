@@ -1153,10 +1153,15 @@ public class Sistema {
 				{
 					aprobado = false;
 				}
-				if (LocalDateTime.parse(state[1]).isBefore(A.getDateLimit()))
-				{
+				if (state[1].equals("NULL")) {
 					aprobado = false;
+				}else {
+					if (LocalDateTime.parse(state[1]).isBefore(A.getDateLimit()))
+					{
+						aprobado = false;
+					}
 				}
+				
 				
 			}
 		}
