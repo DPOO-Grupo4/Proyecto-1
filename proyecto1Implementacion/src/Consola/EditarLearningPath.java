@@ -1,64 +1,93 @@
 package Consola;
+
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
+
+import System.LearningPath;
+import System.Sistema;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 
 public class EditarLearningPath extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					EditarLearningPath frame = new EditarLearningPath();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
-	/**
-	 * Create the frame.
-	 */
-	public EditarLearningPath() {
+	public EditarLearningPath(Sistema sistema) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 
 		setContentPane(contentPane);
+		contentPane.setLayout(null);
 		
-		JPanel panel = new JPanel();
-		contentPane.add(panel);
+		JLabel lblEditarLearningPath = new JLabel("Editar Learning Path");
+		lblEditarLearningPath.setBounds(131, 11, 153, 19);
+		lblEditarLearningPath.setFont(new Font("Tahoma", Font.BOLD, 15));
+		contentPane.add(lblEditarLearningPath);
 		
-		JLabel lblNewLabel = new JLabel("Editar Learning Path");
-		GroupLayout gl_panel = new GroupLayout(panel);
-		gl_panel.setHorizontalGroup(
-			gl_panel.createParallelGroup(Alignment.LEADING)
-				.addGroup(Alignment.TRAILING, gl_panel.createSequentialGroup()
-					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(lblNewLabel)
-					.addContainerGap())
-		);
-		gl_panel.setVerticalGroup(
-			gl_panel.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panel.createSequentialGroup()
-					.addComponent(lblNewLabel)
-					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-		);
-		panel.setLayout(gl_panel);
+		JComboBox<String> cmbBoxLPs = new JComboBox<String>();
+		cmbBoxLPs.setMaximumRowCount(30);
+		cmbBoxLPs.setBounds(39, 78, 340, 22);
+		contentPane.add(cmbBoxLPs);
+		
+		HashMap<String,LearningPath> MLPs= new HashMap<String,LearningPath>();
+		
+		try {
+			ArrayList<LearningPath> LPsCreados= sistema.getLPsCreados(sistema.getSession().getLogin());
+			for (LearningPath LP: LPsCreados) {
+				MLPs.put(LP.getTitulo(), LP);
+				cmbBoxLPs.addItem(LP.getTitulo());
+				
+			}
+			cmbBoxLPs.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String seleccionTitulo = (String) cmbBoxLPs.getSelectedItem();
+					LearningPath seleccion= MLPs.get(seleccionTitulo);
+					if (seleccion != null) {
+						new EditarLearningPathTrans(sistema, seleccion).setVisible(true);
+						dispose();
+					}
+				}
+			});
+			JButton btnRegresar = new JButton("Regresar");
+			btnRegresar.setBounds(162, 213, 89, 23);
+			contentPane.add(btnRegresar);
+			btnRegresar.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					int respuesta= JOptionPane.showConfirmDialog(null, "¿Desea continuar?", "", JOptionPane.YES_OPTION);
+					if (respuesta == JOptionPane.YES_OPTION) {
+						new InicioProfesor(sistema).setVisible(true);
+						dispose();
+					
+				}}
+				
+			});
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
 	}
 
 }

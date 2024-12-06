@@ -14,34 +14,16 @@ import javax.swing.JOptionPane;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import System.Sistema;
 
-public class InicioProfesor extends JFrame implements ActionListener {
-
+public class InicioProfesor extends JFrame {
+ 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	JButton CrearLearningPath, EditarLearningPath, CalificaActividad, VerActividadesCreadas, VerLearningPathsCreados, VerResenas, CerrarSesion;
 	
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					InicioProfesor frame = new InicioProfesor();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
-	/**
-	 * Create the frame.
-	 */
-	public InicioProfesor() {
+	
+	public InicioProfesor(Sistema sistema) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 567, 329);
 		contentPane = new JPanel();
@@ -50,31 +32,89 @@ public class InicioProfesor extends JFrame implements ActionListener {
 		setContentPane(contentPane);
 		
 		CrearLearningPath = new JButton("Crear Learning Path");
-		CrearLearningPath.addActionListener(this);
-		CrearLearningPath.setBounds(94, 75, 165, 23);
+		CrearLearningPath.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (CrearLearningPath == e.getSource()) {
+					int respuesta= JOptionPane.showConfirmDialog(null, "¿Desea continuar?", "", JOptionPane.YES_OPTION);
+					if (respuesta == JOptionPane.YES_OPTION) {
+						new CrearLearningPathProf(sistema).setVisible(true);
+						dispose();
+			}}}
+		});
+		CrearLearningPath.setBounds(32, 75, 236, 23);
 		
 		EditarLearningPath = new JButton("Editar Learning Path");
-		EditarLearningPath.addActionListener(this);
-		EditarLearningPath.setBounds(322, 75, 149, 23);
+		EditarLearningPath.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (EditarLearningPath == e.getSource()) {
+					int respuesta= JOptionPane.showConfirmDialog(null, "¿Desea continuar?", "", JOptionPane.YES_OPTION);
+					if (respuesta == JOptionPane.YES_OPTION) {
+						new EditarLearningPath(sistema).setVisible(true);
+						dispose();
+			}}}
+		});
+		EditarLearningPath.setBounds(284, 75, 217, 23);
 		
 		CalificaActividad = new JButton("Calificar Actividad");
-		CalificaActividad.addActionListener(this);
-		CalificaActividad.setBounds(94, 116, 165, 23);
+		CalificaActividad.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (CalificaActividad == e.getSource()) {
+					int respuesta= JOptionPane.showConfirmDialog(null, "¿Desea continuar?", "", JOptionPane.YES_OPTION);
+					if (respuesta == JOptionPane.YES_OPTION) {
+						new CalificaActividad(sistema).setVisible(true);
+						dispose();
+			}}}
+		});
+		CalificaActividad.setBounds(32, 116, 236, 23);
 		
 		VerActividadesCreadas = new JButton("Ver Actividades Creadas");
-		VerActividadesCreadas.addActionListener(this);
-		VerActividadesCreadas.setBounds(322, 116, 149, 23);
+		VerActividadesCreadas.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (VerActividadesCreadas == e.getSource()) {
+					int respuesta= JOptionPane.showConfirmDialog(null, "¿Desea continuar?", "", JOptionPane.YES_OPTION);
+					if (respuesta == JOptionPane.YES_OPTION) {
+						new VerActividadesCreadasProf(sistema).setVisible(true);
+						dispose();
+			}}}
+		});
+		VerActividadesCreadas.setBounds(284, 116, 217, 23);
 		
 		VerLearningPathsCreados = new JButton("Ver Learning Paths Creados");
-		VerLearningPathsCreados.addActionListener(this);
-		VerLearningPathsCreados.setBounds(94, 157, 165, 23);
+		VerLearningPathsCreados.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (VerLearningPathsCreados == e.getSource()) {
+					int respuesta= JOptionPane.showConfirmDialog(null, "¿Desea continuar?", "", JOptionPane.YES_OPTION);
+					if (respuesta == JOptionPane.YES_OPTION) {
+						new VerLPsCreadosProf(sistema).setVisible(true);
+						dispose();
+			}}}
+		});
+		VerLearningPathsCreados.setBounds(32, 157, 236, 23);
 		
 		VerResenas = new JButton("Ver Reseñas");
-		VerResenas.addActionListener(this); 
-		VerResenas.setBounds(322, 157, 149, 23);
+		VerResenas.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (VerResenas == e.getSource()) {
+					int respuesta= JOptionPane.showConfirmDialog(null, "¿Desea continuar?", "", JOptionPane.YES_OPTION);
+					if (respuesta == JOptionPane.YES_OPTION) {
+						new VerReseniasProf(sistema).setVisible(true);
+						dispose();
+			}}}
+		});
+		VerResenas.setBounds(284, 157, 217, 23);
 		
 		CerrarSesion = new JButton("Cerrar Sesión");
-		CerrarSesion.setBounds(217, 210, 143, 23);
+		CerrarSesion.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (CerrarSesion == e.getSource()) {
+					int respuesta= JOptionPane.showConfirmDialog(null, "¿Desea cerrar sesión?", "", JOptionPane.YES_OPTION);
+					if (respuesta == JOptionPane.YES_OPTION) {
+						InicioSesion IS = new InicioSesion(sistema);
+						IS.setVisible(true);
+						dispose();
+			}}}
+		});
+		CerrarSesion.setBounds(205, 210, 143, 23);
 		
 		JLabel LabelBienvedida = new JLabel("BIENVENID@");
 		LabelBienvedida.setFont(new Font("Arial", Font.BOLD, 30));
@@ -88,20 +128,7 @@ public class InicioProfesor extends JFrame implements ActionListener {
 		contentPane.add(VerResenas);
 		contentPane.add(CerrarSesion); 
 		contentPane.add(LabelBienvedida);
-	} 
-	
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		
-		if (CrearLearningPath == e.getSource()) {
-			int respuesta= JOptionPane.showConfirmDialog(null, "¿Desea continuar?", "", JOptionPane.YES_OPTION);
-			if (respuesta == JOptionPane.YES_OPTION) {
-				new CrearLearningPathProfesor().setVisible(true);
-				JOptionPane.showMessageDialog(CalificaActividad, e);
-				dispose();
-				
-			}
-		}
-		
 	}
+
+	
 }
