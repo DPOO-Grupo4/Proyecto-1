@@ -80,7 +80,9 @@ public class InicioSesion extends JFrame {
 							PInicioEstudiante.setVisible(true);
 							dispose();
 						}else {
-							
+							InicioProfesor inicioProfesor= new InicioProfesor(sistema);
+							inicioProfesor.setVisible(true);
+							dispose();
 						}
 						
 						//menuAplicacion(sistema, scanner);
@@ -105,4 +107,3 @@ public class InicioSesion extends JFrame {
 		layeredPane.add(btnNewButton_1);
 	}
 }
-
