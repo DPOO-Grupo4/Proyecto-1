@@ -42,7 +42,7 @@ public class ProfesorCalificarActividad2 extends JFrame {
 		
 		setContentPane(contentPane);
 		
-		JScrollPane scrollPane = new JScrollPane();
+		JPanel scrollPane = new JPanel();
 		
 		
 		List list = new List();

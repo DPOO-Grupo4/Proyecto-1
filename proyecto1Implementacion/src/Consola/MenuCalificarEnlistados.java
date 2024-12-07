@@ -38,7 +38,7 @@ public class MenuCalificarEnlistados extends JFrame {
 		
 		JLabel lblNewLabel = new JLabel("Escoger el estudiante que desea calificar:");
 		
-		JScrollPane scrollPane = new JScrollPane();
+		JPanel scrollPane = new JPanel();
 		List enlistados = new List();
 		scrollPane.add(enlistados);
 		ArrayList<Estudiante> estudiantes = new ArrayList<Estudiante>();

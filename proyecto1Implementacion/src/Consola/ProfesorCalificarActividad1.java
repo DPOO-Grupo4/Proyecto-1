@@ -37,6 +37,20 @@ public class ProfesorCalificarActividad1 extends JFrame{
             listLPSinterfaz.addElement(lp.getTitulo());
         }
         listLPSinterfaz.addElement("Volver");
+        
+        JButton btnRegresar = new JButton("Regresar");
+        btnRegresar.setLocation(280, 200);
+        btnRegresar.setSize(106, 25);
+        mainPanel.add(btnRegresar);
+
+        btnRegresar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                InicioProfesor IS = new InicioProfesor(sistema);
+                IS.setVisible(true);
+                dispose();
+            }
+        });
 
         JList<String> lpList = new JList<>(listLPSinterfaz);
         lpList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -80,19 +94,4 @@ public class ProfesorCalificarActividad1 extends JFrame{
         mainPanel.setLayout(gl_mainPanel);
     }
 }
-
-     
-/*
-    public static void main(String[] args) {
-
-        Sistema sistema = new Sistema(); 
-        SwingUtilities.invokeLater(() -> {
-            ProfesorCalificarActividad1 ventana = new ProfesorCalificarActividad1(sistema);
-            LearningPath lpSeleccionado = LPs.get(selectedIndex);
-            ProfesorCalificarActividad2 PCA2 = new ProfesorCalificarActividad2(sistema, lpSeleccionado);
-            ventana.setVisible(true);
-        });
-    }
-}
-*/
 
